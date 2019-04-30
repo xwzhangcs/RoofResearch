@@ -22,6 +22,7 @@ void translate_bld_mask(const char* mask_tiff, std::string output_img_file);
 std::vector<std::vector<int>> read_tiff_int(const char* mask_tiff);
 void crop_img_from_mask(const char* src_tiff, std::vector<std::vector<int>> & type_info, std::string output_img_file);
 void findSkeleton(std::string src_img_file, std::string output_img_file);
+void findSkeleton(std::string src_img_file, std::string mask_img_file, std::string output_img_file);
 bool isClockwise(const std::vector<cv::Point>& polygon);
 
 int main(int argc, char** argv)
@@ -31,7 +32,8 @@ int main(int argc, char** argv)
 	//type_info = read_tiff_int("../data/building_cluster_0034__segment_mask.tif");
 	//crop_img_from_mask("../data/building_cluster_0034__OrthoPAN.tif", type_info, "../data/test_pan.png");
 	//crop_img_from_mask("../data/building_cluster_0034__OrthoRGB.tif", type_info, "../data/test_rgb.png");
-	findSkeleton("../data/building_mask.png", "../data/skeleton.png");
+	//findSkeleton("../data/building_mask.png", "../data/skeleton.png");
+	findSkeleton("../data/building_mask.png", "../data/test_rgb.png", "../data/skeleton_png.png");
 	system("pause");
 	return 0;
 }
@@ -84,6 +86,48 @@ void findSkeleton(std::string src_img_file, std::string output_img_file){
 	cv::imwrite(output_img_file, drawing);
 
 	
+}
+
+void findSkeleton(std::string src_img_file, std::string mask_img_file, std::string output_img_file){
+	cv::Mat src = cv::imread(src_img_file, CV_LOAD_IMAGE_UNCHANGED);
+	std::vector<std::vector<cv::Point> > contours;
+	std::vector<std::vector<cv::Point> > contours_approx;
+	std::vector<cv::Vec4i> hierarchy;
+	cv::findContours(src, contours, hierarchy, CV_RETR_TREE, CV_CHAIN_APPROX_SIMPLE, cv::Point(0, 0));
+
+	cv::Mat drawing = cv::imread(mask_img_file, CV_LOAD_IMAGE_UNCHANGED);
+	contours_approx.resize(contours.size());
+	double epsilon = 4.0;
+	for (size_t i = 0; i< contours.size(); i++)
+	{
+		cv::Scalar color = cv::Scalar(255, 255, 255);
+		//drawContours(drawing, contours, (int)i, color, 1, 8, hierarchy, 0, cv::Point());
+		cv::approxPolyDP(contours[i], contours_approx[i], epsilon, true);
+	}
+
+	if (isClockwise(contours_approx[0])){
+		std::cout << "clockwise" << std::endl;
+		std::reverse(contours_approx[0].begin(), contours_approx[0].end());
+	}
+	else{
+		std::cout << "counterClockwise" << std::endl;
+	}
+	Polygon_2 poly;
+	std::cout << "There are " << contours_approx[0].size() << " points." << std::endl;
+	for (int i = 0; i < contours_approx[0].size(); i++)
+		poly.push_back(Point(contours_approx[0][i].x, contours_approx[0][i].y));
+
+	// You can pass the polygon via an iterator pair
+	SsPtr iss = CGAL::create_interior_straight_skeleton_2(poly.vertices_begin(), poly.vertices_end());
+	std::vector<std::vector<double>> edges = edges_straight_skeleton(*iss);
+	for (int i = 0; i< edges.size(); i++)
+	{
+		cv::Scalar color = cv::Scalar(0, 0, 255);
+		cv::line(drawing, cv::Point(edges[i][0], edges[i][1]), cv::Point(edges[i][2], edges[i][3]), color, 1, 8, 0);
+	}
+	cv::imwrite(output_img_file, drawing);
+
+
 }
 
 bool isClockwise(const std::vector<cv::Point>& polygon) {
