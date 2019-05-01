@@ -1,6 +1,7 @@
 #define _CRT_SECURE_NO_WARNINGS
 
 #include <iostream>
+#include <Windows.h>
 #include<boost/shared_ptr.hpp>
 #include<CGAL/Exact_predicates_inexact_constructions_kernel.h>
 #include<CGAL/Polygon_2.h>
@@ -24,6 +25,7 @@ void crop_img_from_mask(const char* src_tiff, std::vector<std::vector<int>> & ty
 void findSkeleton(std::string src_img_file, std::string output_img_file);
 void findSkeleton(std::string src_img_file, std::string mask_img_file, std::string output_img_file);
 bool isClockwise(const std::vector<cv::Point>& polygon);
+std::vector<std::string> get_all_files_names_within_folder(std::string folder);
 
 int main(int argc, char** argv)
 {
@@ -33,7 +35,50 @@ int main(int argc, char** argv)
 	//crop_img_from_mask("../data/building_cluster_0034__OrthoPAN.tif", type_info, "../data/test_pan.png");
 	//crop_img_from_mask("../data/building_cluster_0034__OrthoRGB.tif", type_info, "../data/test_rgb.png");
 	//findSkeleton("../data/building_mask.png", "../data/skeleton.png");
-	findSkeleton("../data/building_mask.png", "../data/test_rgb.png", "../data/skeleton_png.png");
+	//findSkeleton("../data/building_mask.png", "../data/test_rgb.png", "../data/skeleton_png.png");
+	std::string path("../data/D7");
+	std::vector<std::string> sub_folders = get_all_files_names_within_folder(path);
+	// normal
+	//for (int i = 0; i < sub_folders.size(); i++){
+	//	std::string sub_folder = sub_folders[i];
+	//	std::string bld_mask_tif = path + "/" + sub_folder + "/building_cluster_" + sub_folder + "__segment_mask.tif";
+	//	std::string bld_mask_img = path + "/" + sub_folder + "/building_cluster_" + sub_folder + "__segment_mask.png";
+	//	//std::cout << "bld_mask is " << bld_mask << std::endl;
+	//	std::vector<std::vector<int>> type_info;
+	//	//translate_bld_mask(bld_mask_tif.c_str(), bld_mask_img);
+	//	type_info = read_tiff_int(bld_mask_tif.c_str());
+	//	std::string bld_pan_tif = path + "/" + sub_folder + "/building_cluster_" + sub_folder + "__OrthoPAN.tif";
+	//	std::string bld_pan_img = path + "/" + sub_folder + "/building_cluster_" + sub_folder + "__OrthoPAN.png";
+	//	std::string bld_rgb_tif = path + "/" + sub_folder + "/building_cluster_" + sub_folder + "__OrthoRGB.tif";
+	//	std::string bld_rgb_img = path + "/" + sub_folder + "/building_cluster_" + sub_folder + "__OrthoRGB.png";
+	//	crop_img_from_mask(bld_pan_tif.c_str(), type_info, bld_pan_img);
+	//	crop_img_from_mask(bld_rgb_tif.c_str(), type_info, bld_rgb_img);
+	//	std::string skeleton_mask_img = path + "/" + sub_folder + "/building_cluster_" + sub_folder + "__Skeleton_mask.png";
+	//	findSkeleton(bld_mask_img, skeleton_mask_img);
+	//	std::string skeleton_rgb_img = path + "/" + sub_folder + "/building_cluster_" + sub_folder + "__Skeleton.png";
+	//	findSkeleton(bld_mask_img, bld_rgb_img, skeleton_rgb_img);
+	//}
+
+	// oriented
+	for (int i = 0; i < 1/*sub_folders.size()*/; i++){
+		std::string sub_folder = sub_folders[i];
+		std::string bld_mask_tif = path + "/" + sub_folder + "/building_cluster_" + sub_folder + "__segment_oriented.tif";
+		std::string bld_mask_img = path + "/" + sub_folder + "/building_cluster_" + sub_folder + "__segment_oriented_mask.png";
+		//std::cout << "bld_mask is " << bld_mask << std::endl;
+		std::vector<std::vector<int>> type_info;
+		translate_bld_mask(bld_mask_tif.c_str(), bld_mask_img);
+		type_info = read_tiff_int(bld_mask_tif.c_str());
+		std::string bld_pan_tif = path + "/" + sub_folder + "/building_cluster_" + sub_folder + "__OrthoPAN_oriented.tif";
+		std::string bld_pan_img = path + "/" + sub_folder + "/building_cluster_" + sub_folder + "__OrthoPAN_oriented.png";
+		std::string bld_rgb_tif = path + "/" + sub_folder + "/building_cluster_" + sub_folder + "__OrthoRGB_oriented.tif";
+		std::string bld_rgb_img = path + "/" + sub_folder + "/building_cluster_" + sub_folder + "__OrthoRGB_oriented.png";
+		crop_img_from_mask(bld_pan_tif.c_str(), type_info, bld_pan_img);
+		crop_img_from_mask(bld_rgb_tif.c_str(), type_info, bld_rgb_img);
+		std::string skeleton_mask_img = path + "/" + sub_folder + "/building_cluster_" + sub_folder + "__Skeleton_oriented_mask.png";
+		findSkeleton(bld_mask_img, skeleton_mask_img);
+		std::string skeleton_rgb_img = path + "/" + sub_folder + "/building_cluster_" + sub_folder + "__Skeleton_oriented.png";
+		findSkeleton(bld_mask_img, bld_rgb_img, skeleton_rgb_img);
+	}
 	system("pause");
 	return 0;
 }
@@ -422,4 +467,25 @@ void crop_img_from_mask(const char* src_tiff, std::vector<std::vector<int>> & ty
 		cv::imwrite(output_img_file, output_img);
 
 	}
+}
+
+std::vector<std::string> get_all_files_names_within_folder(std::string folder)
+{
+	std::vector<std::string> names;
+	std::string search_path = folder + "/*.*";
+	WIN32_FIND_DATA fd;
+	HANDLE hFind = ::FindFirstFile(search_path.c_str(), &fd);
+	if (hFind != INVALID_HANDLE_VALUE) {
+		do {
+			// read all (real) files in current folder
+			// , delete '!' read other 2 default folder . and ..
+			/*if (!(fd.dwFileAttributes & FILE_ATTRIBUTE_DIRECTORY)) {
+			names.push_back(fd.cFileName);
+			}*/
+			if (std::string(fd.cFileName).compare(".") != 0 && std::string(fd.cFileName).compare("..") != 0)
+				names.push_back(fd.cFileName);
+		} while (::FindNextFile(hFind, &fd));
+		::FindClose(hFind);
+	}
+	return names;
 }
