@@ -60,6 +60,7 @@ def main(aoi_dir, html_file_name):
 	html_file += "      <th>RGB.</th>\n"
 	html_file += "      <th>Skeleton.</th>\n"
 	html_file += "      <th>Skeleton RGB.</th>\n"
+	html_file += "      <th>Entropy.</th>\n"
 
 	clusters = sorted(os.listdir(aoi_dir))
 	for i in range(len(clusters)):
@@ -69,6 +70,7 @@ def main(aoi_dir, html_file_name):
 		rgb_img = cluster + '/' + 'building_cluster_' + clusters[i] + '__OrthoRGB.png'
 		skeleton_img = cluster + '/' + 'building_cluster_' + clusters[i] + '__Skeleton_mask.png'
 		skeleton_rgb_img = cluster + '/' + 'building_cluster_' + clusters[i] + '__Skeleton.png'
+		entropy_img = cluster + '/' + 'building_cluster_' + clusters[i] + '__entropy.png'
 		html_file += "    <tr>\n"
 		html_file += "      <td>" + cluster + "</td>\n"
 		html_file += "      <td><a href=\"" + bld_mask + "\"><img src=\"" + bld_mask + "\"/></a></td>\n"
@@ -76,6 +78,7 @@ def main(aoi_dir, html_file_name):
 		html_file += "      <td><a href=\"" + rgb_img + "\"><img src=\"" + rgb_img + "\"/></a></td>\n"
 		html_file += "      <td><a href=\"" + skeleton_img + "\"><img src=\"" + skeleton_img + "\"/></a></td>\n"
 		html_file += "      <td><a href=\"" + skeleton_rgb_img + "\"><img src=\"" + skeleton_rgb_img + "\"/></a></td>\n"
+		html_file += "      <td><a href=\"" + entropy_img + "\"><img src=\"" + entropy_img + "\"/></a></td>\n"
 		html_file += "    </tr>\n"
 
 	html_file += "  </table>\n"
