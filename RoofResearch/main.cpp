@@ -26,61 +26,101 @@ void findSkeleton(std::string src_img_file, std::string output_img_file);
 void findSkeleton(std::string src_img_file, std::string mask_img_file, std::string output_img_file);
 bool isClockwise(const std::vector<cv::Point>& polygon);
 std::vector<std::string> get_all_files_names_within_folder(std::string folder);
+void generate_from_mask(std::string aoi_path);
+void generate_from_ndsm(std::string aoi_path);
+void generate_from_entroy(std::string src_path, std::string output_path);
+void translate_bld_ndsm(const char* mask_tiff, std::string output_img_file, float threshold);
+void translate_entropy_imgs(std::string entropy_file, float threshold, std::string output_img_file);
 
 int main(int argc, char** argv)
 {
-	//std::vector<std::vector<int>> type_info;
-	//translate_bld_mask("../data/building_cluster_0034__segment_mask.tif", "../data/building_mask.png");
-	//type_info = read_tiff_int("../data/building_cluster_0034__segment_mask.tif");
-	//crop_img_from_mask("../data/building_cluster_0034__OrthoPAN.tif", type_info, "../data/test_pan.png");
-	//crop_img_from_mask("../data/building_cluster_0034__OrthoRGB.tif", type_info, "../data/test_rgb.png");
-	//findSkeleton("../data/building_mask.png", "../data/skeleton.png");
-	//findSkeleton("../data/building_mask.png", "../data/test_rgb.png", "../data/skeleton_png.png");
-	std::string path("../data/D7");
+	generate_from_entroy("../data/entropy_v2", "../data/entropy");
+	system("pause");
+	return 0;
+}
+
+void generate_from_entroy(std::string src_path, std::string output_path){
+	std::string path(src_path);
+	std::vector<std::string> sub_imgs = get_all_files_names_within_folder(path);
+	// normal
+	for (int i = 0; i < sub_imgs.size(); i++){
+		std::string src_entropy_img = path + "/" + sub_imgs[i];
+		std::string output_entropy_img = output_path + "/" + sub_imgs[i];
+		std::cout << "output_entropy_img is " << output_entropy_img << std::endl;
+		float threshold = 120;
+		translate_entropy_imgs(src_entropy_img, threshold, output_entropy_img);
+	}
+}
+
+void generate_from_ndsm(std::string aoi_path){
+	std::string path(aoi_path);
 	std::vector<std::string> sub_folders = get_all_files_names_within_folder(path);
 	// normal
-	//for (int i = 0; i < sub_folders.size(); i++){
-	//	std::string sub_folder = sub_folders[i];
-	//	std::string bld_mask_tif = path + "/" + sub_folder + "/building_cluster_" + sub_folder + "__segment_mask.tif";
-	//	std::string bld_mask_img = path + "/" + sub_folder + "/building_cluster_" + sub_folder + "__segment_mask.png";
-	//	//std::cout << "bld_mask is " << bld_mask << std::endl;
-	//	std::vector<std::vector<int>> type_info;
-	//	//translate_bld_mask(bld_mask_tif.c_str(), bld_mask_img);
-	//	type_info = read_tiff_int(bld_mask_tif.c_str());
-	//	std::string bld_pan_tif = path + "/" + sub_folder + "/building_cluster_" + sub_folder + "__OrthoPAN.tif";
-	//	std::string bld_pan_img = path + "/" + sub_folder + "/building_cluster_" + sub_folder + "__OrthoPAN.png";
-	//	std::string bld_rgb_tif = path + "/" + sub_folder + "/building_cluster_" + sub_folder + "__OrthoRGB.tif";
-	//	std::string bld_rgb_img = path + "/" + sub_folder + "/building_cluster_" + sub_folder + "__OrthoRGB.png";
-	//	crop_img_from_mask(bld_pan_tif.c_str(), type_info, bld_pan_img);
-	//	crop_img_from_mask(bld_rgb_tif.c_str(), type_info, bld_rgb_img);
-	//	std::string skeleton_mask_img = path + "/" + sub_folder + "/building_cluster_" + sub_folder + "__Skeleton_mask.png";
-	//	findSkeleton(bld_mask_img, skeleton_mask_img);
-	//	std::string skeleton_rgb_img = path + "/" + sub_folder + "/building_cluster_" + sub_folder + "__Skeleton.png";
-	//	findSkeleton(bld_mask_img, bld_rgb_img, skeleton_rgb_img);
-	//}
-
-	// oriented
-	for (int i = 0; i < 1/*sub_folders.size()*/; i++){
+	for (int i = 0; i < sub_folders.size(); i++){
 		std::string sub_folder = sub_folders[i];
-		std::string bld_mask_tif = path + "/" + sub_folder + "/building_cluster_" + sub_folder + "__segment_oriented.tif";
-		std::string bld_mask_img = path + "/" + sub_folder + "/building_cluster_" + sub_folder + "__segment_oriented_mask.png";
+		std::string bld_mask_tif = path + "/" + sub_folder + "/building_cluster_" + sub_folder + "__NDSM.tif";
+		std::string bld_mask_img = path + "/" + sub_folder + "/building_cluster_" + sub_folder + "__NDSM.png";
+		//std::cout << "bld_mask is " << bld_mask << std::endl;
+		std::vector<std::vector<int>> type_info;
+		translate_bld_ndsm(bld_mask_tif.c_str(), bld_mask_img, 0.7);
+		/*type_info = read_tiff_int(bld_mask_tif.c_str());
+		std::string bld_pan_tif = path + "/" + sub_folder + "/building_cluster_" + sub_folder + "__OrthoPAN.tif";
+		std::string bld_pan_img = path + "/" + sub_folder + "/building_cluster_" + sub_folder + "__OrthoPAN.png";
+		std::string bld_rgb_tif = path + "/" + sub_folder + "/building_cluster_" + sub_folder + "__OrthoRGB.tif";
+		std::string bld_rgb_img = path + "/" + sub_folder + "/building_cluster_" + sub_folder + "__OrthoRGB.png";
+		crop_img_from_mask(bld_pan_tif.c_str(), type_info, bld_pan_img);
+		crop_img_from_mask(bld_rgb_tif.c_str(), type_info, bld_rgb_img);
+		std::string skeleton_mask_img = path + "/" + sub_folder + "/building_cluster_" + sub_folder + "__Skeleton_mask.png";
+		findSkeleton(bld_mask_img, skeleton_mask_img);
+		std::string skeleton_rgb_img = path + "/" + sub_folder + "/building_cluster_" + sub_folder + "__Skeleton.png";
+		findSkeleton(bld_mask_img, bld_rgb_img, skeleton_rgb_img);*/
+	}
+}
+
+void generate_from_mask(std::string aoi_path){
+	std::string path(aoi_path);
+	std::vector<std::string> sub_folders = get_all_files_names_within_folder(path);
+	// normal
+	for (int i = 0; i < sub_folders.size(); i++){
+		std::string sub_folder = sub_folders[i];
+		std::string bld_mask_tif = path + "/" + sub_folder + "/building_cluster_" + sub_folder + "__segment_mask.tif";
+		std::string bld_mask_img = path + "/" + sub_folder + "/building_cluster_" + sub_folder + "__segment_mask.png";
 		//std::cout << "bld_mask is " << bld_mask << std::endl;
 		std::vector<std::vector<int>> type_info;
 		translate_bld_mask(bld_mask_tif.c_str(), bld_mask_img);
 		type_info = read_tiff_int(bld_mask_tif.c_str());
-		std::string bld_pan_tif = path + "/" + sub_folder + "/building_cluster_" + sub_folder + "__OrthoPAN_oriented.tif";
-		std::string bld_pan_img = path + "/" + sub_folder + "/building_cluster_" + sub_folder + "__OrthoPAN_oriented.png";
-		std::string bld_rgb_tif = path + "/" + sub_folder + "/building_cluster_" + sub_folder + "__OrthoRGB_oriented.tif";
-		std::string bld_rgb_img = path + "/" + sub_folder + "/building_cluster_" + sub_folder + "__OrthoRGB_oriented.png";
+		std::string bld_pan_tif = path + "/" + sub_folder + "/building_cluster_" + sub_folder + "__OrthoPAN.tif";
+		std::string bld_pan_img = path + "/" + sub_folder + "/building_cluster_" + sub_folder + "__OrthoPAN.png";
+		std::string bld_rgb_tif = path + "/" + sub_folder + "/building_cluster_" + sub_folder + "__OrthoRGB.tif";
+		std::string bld_rgb_img = path + "/" + sub_folder + "/building_cluster_" + sub_folder + "__OrthoRGB.png";
 		crop_img_from_mask(bld_pan_tif.c_str(), type_info, bld_pan_img);
 		crop_img_from_mask(bld_rgb_tif.c_str(), type_info, bld_rgb_img);
-		std::string skeleton_mask_img = path + "/" + sub_folder + "/building_cluster_" + sub_folder + "__Skeleton_oriented_mask.png";
+		std::string skeleton_mask_img = path + "/" + sub_folder + "/building_cluster_" + sub_folder + "__Skeleton_mask.png";
 		findSkeleton(bld_mask_img, skeleton_mask_img);
-		std::string skeleton_rgb_img = path + "/" + sub_folder + "/building_cluster_" + sub_folder + "__Skeleton_oriented.png";
+		std::string skeleton_rgb_img = path + "/" + sub_folder + "/building_cluster_" + sub_folder + "__Skeleton.png";
 		findSkeleton(bld_mask_img, bld_rgb_img, skeleton_rgb_img);
 	}
-	system("pause");
-	return 0;
+}
+
+void translate_entropy_imgs(std::string entropy_file, float threshold, std::string output_img_file){
+	cv::Mat src = cv::imread(entropy_file, CV_LOAD_IMAGE_UNCHANGED);
+	cv::Scalar bg_color(0, 0, 0); // black for background
+	cv::Mat output_img(src.size(), CV_8UC1, bg_color);
+	for (int i = 0; i < src.size().height; i++){
+		for (int j = 0; j < src.size().width; j++){
+			if ((int)src.at<uchar>(i, j) > threshold)
+				output_img.at<uchar>(i, j) = (uchar)255/*src.at<uchar>(i, j)*/;
+		}
+	}
+	// do erosion
+	int erosion_type = cv::MORPH_RECT;
+	cv::Mat erode_dst;
+	int kernel_size = 3;
+	cv::Mat element = cv::getStructuringElement(erosion_type, cv::Size(kernel_size, kernel_size), cv::Point(kernel_size / 2, kernel_size / 2));
+	/// Apply the dilation operation
+	cv::erode(output_img, erode_dst, element);
+
+	cv::imwrite(output_img_file, erode_dst);
 }
 
 void findSkeleton(std::string src_img_file, std::string output_img_file){
@@ -98,6 +138,12 @@ void findSkeleton(std::string src_img_file, std::string output_img_file){
 		cv::Scalar color = cv::Scalar(255, 255, 255);
 		drawContours(drawing, contours, (int)i, color, 1, 8, hierarchy, 0, cv::Point());
 		cv::approxPolyDP(contours[i], contours_approx[i], epsilon, true);
+		while (contours_approx[i].size() > 80){
+			epsilon += 2;
+			contours_approx[i].clear();
+			cv::approxPolyDP(contours[i], contours_approx[i], epsilon, true);
+		}
+		epsilon = 4;
 	}
 
 	for (size_t i = 0; i< contours_approx.size(); i++)
@@ -148,6 +194,12 @@ void findSkeleton(std::string src_img_file, std::string mask_img_file, std::stri
 		cv::Scalar color = cv::Scalar(255, 255, 255);
 		//drawContours(drawing, contours, (int)i, color, 1, 8, hierarchy, 0, cv::Point());
 		cv::approxPolyDP(contours[i], contours_approx[i], epsilon, true);
+		while (contours_approx[i].size() > 80){
+			epsilon += 2;
+			contours_approx[i].clear();
+			cv::approxPolyDP(contours[i], contours_approx[i], epsilon, true);
+		}
+		epsilon = 4;
 	}
 
 	if (isClockwise(contours_approx[0])){
@@ -317,6 +369,76 @@ void translate_bld_mask(const char* type_tiff, std::string output_img_file){
 		for (int i = 0; i < nYSize; i++){
 			for (int j = 0; j < nXSize; j++){
 				if (pafScanline[j + nXSize*i] == 1)
+					output_img.at<uchar>(i, j) = (uchar)255;
+			}
+		}
+		cv::imwrite(output_img_file, output_img);
+	}
+}
+
+void translate_bld_ndsm(const char* ndsm_tiff, std::string output_img_file, float threshold){
+	// height info
+	GDALDataset  *poDataset_height;
+	std::vector<std::vector<float>> type_info;
+	GDALAllRegister();
+	poDataset_height = (GDALDataset *)GDALOpen(ndsm_tiff, GA_ReadOnly);
+	if (poDataset_height == NULL)
+	{
+		std::cout << " Null data" << std::endl;
+	}
+	else{
+		// Getting Dataset Information
+		double        adfGeoTransform[6];
+		printf("Driver: %s/%s\n",
+			poDataset_height->GetDriver()->GetDescription(),
+			poDataset_height->GetDriver()->GetMetadataItem(GDAL_DMD_LONGNAME));
+		printf("Size is %dx%dx%d\n",
+			poDataset_height->GetRasterXSize(), poDataset_height->GetRasterYSize(),
+			poDataset_height->GetRasterCount());
+		if (poDataset_height->GetProjectionRef() != NULL)
+			printf("Projection is `%s'\n", poDataset_height->GetProjectionRef());
+		if (poDataset_height->GetGeoTransform(adfGeoTransform) == CE_None)
+		{
+			printf("Origin = (%.6f,%.6f)\n",
+				adfGeoTransform[0], adfGeoTransform[3]);
+			printf("Pixel Size = (%.6f,%.6f)\n",
+				adfGeoTransform[1], adfGeoTransform[5]);
+		}
+
+		//Fetching a Raster Band
+		GDALRasterBand  *poBand;
+		int             nBlockXSize, nBlockYSize;
+		int             bGotMin, bGotMax;
+		double          adfMinMax[2];
+		poBand = poDataset_height->GetRasterBand(1);
+		poBand->GetBlockSize(&nBlockXSize, &nBlockYSize);
+		adfMinMax[0] = poBand->GetMinimum(&bGotMin);
+		adfMinMax[1] = poBand->GetMaximum(&bGotMax);
+		if (!(bGotMin && bGotMax))
+			GDALComputeRasterMinMax((GDALRasterBandH)poBand, TRUE, adfMinMax);
+		printf("Min=%.3fd, Max=%.3f\n", adfMinMax[0], adfMinMax[1]);
+		if (poBand->GetOverviewCount() > 0)
+			printf("Band has %d overviews.\n", poBand->GetOverviewCount());
+		if (poBand->GetColorTable() != NULL)
+			printf("Band has a color table with %d entries.\n",
+			poBand->GetColorTable()->GetColorEntryCount());
+		//Reading Raster Data
+		int nXSize = poBand->GetXSize();
+		int nYSize = poBand->GetYSize();
+		float *pafScanline = new float[nXSize*nYSize];
+		printf("Band nXSize is %d.\n", nXSize);
+		printf("Band nYSize is %d.\n", nYSize);
+		pafScanline = (float *)CPLMalloc(sizeof(float)*nXSize*nYSize);
+		poBand->RasterIO(GF_Read, 0, 0, nXSize, nYSize,
+			pafScanline, nXSize, nYSize, GDT_Float32,
+			0, 0);
+
+		// translate to png file
+		cv::Scalar bg_color(0, 0, 0); // black for background
+		cv::Mat output_img(cv::Size(nXSize, nYSize), CV_8UC1, bg_color);
+		for (int i = 0; i < nYSize; i++){
+			for (int j = 0; j < nXSize; j++){
+				if (pafScanline[j + nXSize*i] > threshold * adfMinMax[1])
 					output_img.at<uchar>(i, j) = (uchar)255;
 			}
 		}
