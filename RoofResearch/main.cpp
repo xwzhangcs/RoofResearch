@@ -29,12 +29,14 @@ std::vector<std::string> get_all_files_names_within_folder(std::string folder);
 void generate_from_mask(std::string aoi_path);
 void generate_from_ndsm(std::string aoi_path);
 void generate_from_entroy(std::string src_path, std::string output_path);
+void generate_from_simplify(std::string aoi_path);
 void translate_bld_ndsm(const char* mask_tiff, std::string output_img_file, float threshold);
 void translate_entropy_imgs(std::string entropy_file, float threshold, std::string output_img_file);
 
 int main(int argc, char** argv)
 {
-	generate_from_entroy("../data/entropy_v2", "../data/entropy");
+	generate_from_simplify("../data/D7");
+	//generate_from_entroy("../data/entropy_v2", "../data/entropy");
 	system("pause");
 	return 0;
 }
@@ -62,7 +64,7 @@ void generate_from_ndsm(std::string aoi_path){
 		std::string bld_mask_img = path + "/" + sub_folder + "/building_cluster_" + sub_folder + "__NDSM.png";
 		//std::cout << "bld_mask is " << bld_mask << std::endl;
 		std::vector<std::vector<int>> type_info;
-		translate_bld_ndsm(bld_mask_tif.c_str(), bld_mask_img, 0.7);
+		translate_bld_ndsm(bld_mask_tif.c_str(), bld_mask_img, 0.3);
 		/*type_info = read_tiff_int(bld_mask_tif.c_str());
 		std::string bld_pan_tif = path + "/" + sub_folder + "/building_cluster_" + sub_folder + "__OrthoPAN.tif";
 		std::string bld_pan_img = path + "/" + sub_folder + "/building_cluster_" + sub_folder + "__OrthoPAN.png";
@@ -98,6 +100,22 @@ void generate_from_mask(std::string aoi_path){
 		std::string skeleton_mask_img = path + "/" + sub_folder + "/building_cluster_" + sub_folder + "__Skeleton_mask.png";
 		findSkeleton(bld_mask_img, skeleton_mask_img);
 		std::string skeleton_rgb_img = path + "/" + sub_folder + "/building_cluster_" + sub_folder + "__Skeleton.png";
+		findSkeleton(bld_mask_img, bld_rgb_img, skeleton_rgb_img);
+	}
+}
+
+void generate_from_simplify(std::string aoi_path){
+	std::string path(aoi_path);
+	std::vector<std::string> sub_folders = get_all_files_names_within_folder(path);
+	// normal
+	for (int i = 0; i < sub_folders.size(); i++){
+		std::string sub_folder = sub_folders[i];
+		std::string bld_mask_img = path + "/" + sub_folder + "/building_cluster_" + sub_folder + "__segment_mask_simplify.png";
+		std::string bld_pan_img = path + "/" + sub_folder + "/building_cluster_" + sub_folder + "__OrthoPAN.png";
+		std::string bld_rgb_img = path + "/" + sub_folder + "/building_cluster_" + sub_folder + "__OrthoRGB.png";
+		std::string skeleton_mask_img = path + "/" + sub_folder + "/building_cluster_" + sub_folder + "__Skeleton_mask_simplify.png";
+		findSkeleton(bld_mask_img, skeleton_mask_img);
+		std::string skeleton_rgb_img = path + "/" + sub_folder + "/building_cluster_" + sub_folder + "__Skeleton_simplify.png";
 		findSkeleton(bld_mask_img, bld_rgb_img, skeleton_rgb_img);
 	}
 }
