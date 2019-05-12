@@ -86,7 +86,7 @@ def main(input_filename, output_filename, num_iterations):
 		#Y2 = np.minimum(Y2, Y)
 		Y2[Y2 > 1] = 1
 		
-		misc.imsave('result_' + str(iter) + '.png', (Y2 * 255).astype(np.uint8))
+		misc.imsave('results/result_' + str(iter) + '.png', (Y2 * 255).astype(np.uint8))
 		
 		# update residual
 		residual = Y - Y2
