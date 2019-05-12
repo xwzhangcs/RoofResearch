@@ -27,6 +27,7 @@ void findSkeleton(std::string src_img_file, std::string mask_img_file, std::stri
 bool isClockwise(const std::vector<cv::Point>& polygon);
 std::vector<std::string> get_all_files_names_within_folder(std::string folder);
 void generate_from_mask(std::string aoi_path);
+void generate_from_mask_oriented(std::string aoi_path);
 void generate_from_ndsm(std::string aoi_path);
 void generate_from_entroy(std::string src_path, std::string output_path);
 void generate_from_simplify(std::string aoi_path);
@@ -35,8 +36,7 @@ void translate_entropy_imgs(std::string entropy_file, float threshold, std::stri
 
 int main(int argc, char** argv)
 {
-	generate_from_simplify("../data/D7");
-	//generate_from_entroy("../data/entropy_v2", "../data/entropy");
+	generate_from_mask_oriented("../data/D7");
 	system("pause");
 	return 0;
 }
@@ -101,6 +101,27 @@ void generate_from_mask(std::string aoi_path){
 		findSkeleton(bld_mask_img, skeleton_mask_img);
 		std::string skeleton_rgb_img = path + "/" + sub_folder + "/building_cluster_" + sub_folder + "__Skeleton.png";
 		findSkeleton(bld_mask_img, bld_rgb_img, skeleton_rgb_img);
+	}
+}
+
+void generate_from_mask_oriented(std::string aoi_path){
+	std::string path(aoi_path);
+	std::vector<std::string> sub_folders = get_all_files_names_within_folder(path);
+	// normal
+	for (int i = 0; i < sub_folders.size(); i++){
+		std::string sub_folder = sub_folders[i];
+		std::string bld_mask_tif = path + "/" + sub_folder + "/building_cluster_" + sub_folder + "__segment_oriented.tif";
+		std::string bld_mask_img = path + "/" + sub_folder + "/building_cluster_" + sub_folder + "__segment_oriented.png";
+		//std::cout << "bld_mask is " << bld_mask << std::endl;
+		std::vector<std::vector<int>> type_info;
+		translate_bld_mask(bld_mask_tif.c_str(), bld_mask_img);
+		type_info = read_tiff_int(bld_mask_tif.c_str());
+		std::string bld_pan_tif = path + "/" + sub_folder + "/building_cluster_" + sub_folder + "__OrthoPAN_oriented.tif";
+		std::string bld_pan_img = path + "/" + sub_folder + "/building_cluster_" + sub_folder + "__OrthoPAN_oriented.png";
+		std::string bld_rgb_tif = path + "/" + sub_folder + "/building_cluster_" + sub_folder + "__OrthoRGB_oriented.tif";
+		std::string bld_rgb_img = path + "/" + sub_folder + "/building_cluster_" + sub_folder + "__OrthoRGB_oriented.png";
+		crop_img_from_mask(bld_pan_tif.c_str(), type_info, bld_pan_img);
+		crop_img_from_mask(bld_rgb_tif.c_str(), type_info, bld_rgb_img);
 	}
 }
 
