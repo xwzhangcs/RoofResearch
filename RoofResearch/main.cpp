@@ -33,12 +33,27 @@ void generate_from_entroy(std::string src_path, std::string output_path);
 void generate_from_simplify(std::string aoi_path);
 void translate_bld_ndsm(const char* mask_tiff, std::string output_img_file, float threshold);
 void translate_entropy_imgs(std::string entropy_file, float threshold, std::string output_img_file);
+void transform2roofFit(std::string src_img_file, std::string output_img_file);
 
 int main(int argc, char** argv)
 {
-	generate_from_mask_oriented("../data/D7");
+	//generate_from_mask_oriented("../data/D7");
 	system("pause");
 	return 0;
+}
+
+void transform2roofFit(std::string src_img_file, std::string output_img_file){
+	cv::Mat src = cv::imread(src_img_file, CV_LOAD_IMAGE_UNCHANGED);
+	// size of the source img
+	int width = src.size().width;
+	int height = src.size().height;
+	int target = width > height ? 2 * width : 2 * height;
+	// add padding
+	int borderType = cv::BORDER_CONSTANT;
+	cv::Scalar value(0, 0, 0);
+	cv::Mat img_padding;
+	cv::copyMakeBorder(src, img_padding, (target - height) * 0.5, (target - height) * 0.5, (target - width) * 0.5, (target - width) * 0.5, borderType, value);
+	cv::imwrite(output_img_file, img_padding);
 }
 
 void generate_from_entroy(std::string src_path, std::string output_path){
