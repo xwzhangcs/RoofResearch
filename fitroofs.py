@@ -39,32 +39,7 @@ def main(input_filename, output_filename, num_iterations):
 				Fg = np.conj(Fg)
 				D.append(g)
 				FD.append(Fg)
-	
-	# define circle generators
-	lengths = np.arange(5, 53, 2)
-	for radius in lengths:
-		g = np.zeros((128, 128), np.float)
-		g = cv2.circle(g, (64, 64), radius, (1.0), -1)
-		g /= np.sqrt(np.sum(g * g))
-		Fg = np.fft.fftn(g)
-		Fg = np.conj(Fg)
-		D.append(g)
-		FD.append(Fg)
-	
-	# define right-half-circle generators
-	lengths = np.arange(5, 53, 1)
-	for radius in lengths:
-		for dx in range(int(radius / 2)):
-			theta = math.acos(dx / radius) / math.pi * 180
-			g = np.zeros((128, 128), np.float)
-			g = cv2.ellipse(g, (64 - int((radius + dx)/2), 64), (radius, radius), 0, -theta, theta, (1.0), -1)
-			g = cv2.rectangle(g, (0, 0), (64 - int((radius - dx)/2), 128), (0), -1)
-			g /= np.sqrt(np.sum(g * g))
-			Fg = np.fft.fftn(g)
-			Fg = np.conj(Fg)
-			D.append(g)
-			FD.append(Fg)
-	
+
 	FD = np.array(FD)
 	
 	# solve by matching pursuit
