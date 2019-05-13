@@ -37,8 +37,8 @@ void transform2roofFit(std::string src_img_file, std::string output_img_file);
 
 int main(int argc, char** argv)
 {
-	transform2roofFit("../data/roofFit/building_cluster_0129__segment_oriented.png", "../data/roofFit/building_cluster_0129.png");
-	//generate_from_mask_oriented("../data/D8");
+	transform2roofFit("../data/roofFit/building_cluster_0100__segment_oriented.png", "../data/roofFit/building_cluster_0100.png");
+	//generate_from_mask_oriented("../data/D7");
 	system("pause");
 	return 0;
 }

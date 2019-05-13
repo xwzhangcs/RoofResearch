@@ -6,20 +6,22 @@ from sklearn.linear_model import OrthogonalMatchingPursuit
 from sklearn.linear_model import OrthogonalMatchingPursuitCV
 from sklearn.datasets import make_sparse_coded_signal
 from scipy import misc
+from scipy.ndimage import rotate
 import glob
 import cv2
 
 def main(input_filename, output_filename, num_iterations):
 	# load image
-	Y = misc.imread(input_filename) / 255
+	Y = misc.imread(input_filename)
 
 	# convert to grayscale
 	if Y.ndim == 3:
 		Y = np.mean(Y[:,:,0:2], axis=-1)
 
 	# resize to 128 x 128
-	misc.imresize(Y, (128, 128))
-
+	Y = misc.imresize(Y, (128, 128)) / 255
+	Y[Y < 0.6] = 0
+	# misc.imsave('data/resize_0100.png', (Y * 255).astype(np.uint8))
 	#norm_Y = np.sqrt(np.inner(Y.flat, Y.flat))
 	norm_Y = np.sum(Y)
 
@@ -39,6 +41,60 @@ def main(input_filename, output_filename, num_iterations):
 				Fg = np.conj(Fg)
 				D.append(g)
 				FD.append(Fg)
+
+	'''
+	# define L shape generators
+	max_aspect = 4
+	min_aspect = 1.5
+	width_lengths = np.arange(50, 105, 2)
+	width__l2_lengths = np.arange(2, 105, 2)
+	height_lengths = np.arange(2, 105, 2)
+	for width in width_lengths:
+		for height in height_lengths:
+			if min_aspect <= width / height <= max_aspect:
+				for width_l2 in width__l2_lengths:
+					for height_l2 in height_lengths:
+						if min_aspect <= height_l2 / width_l2 <= max_aspect and width * 0.3 <= width_l2 <= width * 0.6 and height_l2 >= height * 1.8 and 64 - int(
+								height / 2) + height_l2 < 110:
+							g = np.zeros((128, 128), np.float)
+							g = cv2.rectangle(g, (64 - int(width / 2), 64 - int(height / 2)),
+											  (64 + int(width / 2), 64 + int(height / 2)), (1.0), -1)
+							g = cv2.rectangle(g, (64 + int(width / 2) - width_l2, 64 - int(height / 2)),
+											  (64 + int(width / 2), 64 - int(height / 2) + height_l2), (1.0), -1)
+							g /= np.sqrt(np.sum(g * g))
+							Fg = np.fft.fftn(g)
+							Fg = np.conj(Fg)
+							D.append(g)
+							FD.append(Fg)
+	'''
+	# define T shape generators
+	max_aspect = 4
+	min_aspect = 2
+	max_aspect_l2 = 1.0
+	min_aspect_l2 = 0.5
+	width_lengths = np.arange(30, 105, 2)
+	width_l2_lengths = np.arange(2, 105, 2)
+	height_lengths = np.arange(2, 105, 2)
+	for width in width_lengths:
+		for height in height_lengths:
+			if min_aspect <= width / height <= max_aspect:
+				for space in np.arange(int(width * 0.6), int(width * 0.8), 5):
+					for width_l2 in width_l2_lengths:
+						for height_l2 in height_lengths:
+							if min_aspect_l2 <= height_l2 / width_l2 <= max_aspect_l2 and width * 0.2 <= width_l2 <= width * 0.4 and space + width_l2 < width * 0.9 \
+									and height_l2 <= height and 64 + int(height / 2) + height_l2 < 110:
+								g = np.zeros((128, 128), np.float)
+								g = cv2.rectangle(g, (64 - int(width / 2), 64 - int(height / 2)),
+												  (64 + int(width / 2), 64 + int(height / 2)), (1.0), -1)
+								g = cv2.rectangle(g, (64 - int(width / 2) + space, 64 + int(height / 2)),
+												  (64 - int(width / 2) + space + width_l2,
+												   64 + int(height / 2) + height_l2), (1.0), -1)
+								g = rotate(g, -90, reshape=False)
+								g /= np.sqrt(np.sum(g * g))
+								Fg = np.fft.fftn(g)
+								Fg = np.conj(Fg)
+								D.append(g)
+								FD.append(Fg)
 
 	FD = np.array(FD)
 	
