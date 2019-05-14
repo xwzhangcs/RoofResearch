@@ -10,45 +10,28 @@ from scipy.ndimage import rotate
 import glob
 import cv2
 
-def main(input_filename, output_filename, num_iterations):
-	# load image
-	Y = misc.imread(input_filename)
-
-	# convert to grayscale
-	if Y.ndim == 3:
-		Y = np.mean(Y[:,:,0:2], axis=-1)
-
-	# resize to 128 x 128
-	Y = misc.imresize(Y, (128, 128)) / 255
-	Y[Y < 0.6] = 0
-	Y[Y >= 0.6] = 1.0
-	misc.imsave('data/resize_0112.png', (Y * 255).astype(np.uint8))
-	#norm_Y = np.sqrt(np.inner(Y.flat, Y.flat))
-	norm_Y = np.sum(Y)
-
+def rectangle_generator():
 	D = []
 	FD = []
-
-	rect_start_index = 0
-	rect_end_index = 0
-	# define rectangle generators
 	max_aspect = 5
 	lengths = np.arange(2, 105, 2)
 	for width in lengths:
 		for height in lengths:
-			if width/height <= max_aspect and height/width <= max_aspect:
+			if width / height <= max_aspect and height / width <= max_aspect:
 				g = np.zeros((128, 128), np.float)
-				g = cv2.rectangle(g, (64 - int(width/2), 64 - int(height/2)), (64 + int(width/2), 64 + int(height/2)), (1.0), -1)
+				g = cv2.rectangle(g, (64 - int(width / 2), 64 - int(height / 2)),
+								  (64 + int(width / 2), 64 + int(height / 2)), (1.0), -1)
 				g /= np.sqrt(np.sum(g * g))
 				Fg = np.fft.fftn(g)
 				Fg = np.conj(Fg)
 				D.append(g)
 				FD.append(Fg)
-				rect_end_index = rect_end_index + 1
-	print('rect_end_index: ', rect_end_index)
+	return FD
+
+def l_generator():
 	# define L shape generators
-	l_start_index = rect_end_index
-	l_end_index = rect_end_index
+	D = []
+	FD = []
 	max_aspect = 4
 	min_aspect = 1.5
 	width_lengths = np.arange(50, 105, 2)
@@ -71,11 +54,10 @@ def main(input_filename, output_filename, num_iterations):
 							Fg = np.conj(Fg)
 							D.append(g)
 							FD.append(Fg)
-							l_end_index = l_end_index + 1
-	print('l_end_index: ', l_end_index)
+	return FD
+
+def t_generator():
 	# define T shape generators
-	t_start_index = l_end_index
-	t_end_index = l_end_index
 	max_aspect = 4
 	min_aspect = 2
 	max_aspect_l2 = 1.0
@@ -103,11 +85,10 @@ def main(input_filename, output_filename, num_iterations):
 								Fg = np.conj(Fg)
 								D.append(g)
 								FD.append(Fg)
-								t_end_index = t_end_index + 1
-	print('t_end_index: ', t_end_index)
+	return FD
+
+def u_half_generator():
 	# define half U shape generators
-	u_start_index = t_end_index
-	u_end_index = t_end_index
 	max_aspect = 4
 	min_aspect = 2
 	width_lengths = np.arange(30, 105, 2)
@@ -135,12 +116,10 @@ def main(input_filename, output_filename, num_iterations):
 							Fg = np.conj(Fg)
 							D.append(g)
 							FD.append(Fg)
-							u_end_index = u_end_index + 1
-	print('u_end_index: ', u_end_index)
+	return FD
+
+def u_whole_generator():
 	# define full U shape generators
-	u_full_start_index = u_end_index
-	u_full_end_index = u_end_index
-	'''
 	max_aspect = 2
 	min_aspect = 0
 	max_aspect_l2 = 4
@@ -172,9 +151,30 @@ def main(input_filename, output_filename, num_iterations):
 							Fg = np.conj(Fg)
 							D.append(g)
 							FD.append(Fg)
-							u_full_end_index = u_full_end_index + 1
-	'''
-	print('u_full_end_index: ', u_full_end_index)
+	return FD
+
+def main(input_filename, output_filename, num_iterations):
+	# load image
+	Y = misc.imread(input_filename)
+
+	# convert to grayscale
+	if Y.ndim == 3:
+		Y = np.mean(Y[:,:,0:2], axis=-1)
+
+	# resize to 128 x 128
+	Y = misc.imresize(Y, (128, 128)) / 255
+	Y[Y < 0.6] = 0
+	Y[Y >= 0.6] = 1.0
+	# misc.imsave('data/resize_0112.png', (Y * 255).astype(np.uint8))
+	#norm_Y = np.sqrt(np.inner(Y.flat, Y.flat))
+	norm_Y = np.sum(Y)
+
+	D = []
+	FD = []
+
+	# apply generators
+	FD.extend(rectangle_generator())
+
 	FD = np.array(FD)
 	
 	# solve by matching pursuit
@@ -233,19 +233,6 @@ def main(input_filename, output_filename, num_iterations):
 		err = np.sum(residual)
 		
 		print('iter:', iter, 'index:', (i, tx, ty), 'err:', err/norm_Y, sep='\t')
-		if rect_start_index <= i <= rect_end_index:
-			print('shape: rectangle')
-		elif l_start_index <= i <= l_end_index:
-			print('shape: L')
-		elif l_start_index <= i <= l_end_index:
-			print('shape: L')
-		elif t_start_index <= i <= t_end_index:
-			print('shape: T')
-		elif u_start_index <= i <= u_end_index:
-			print('shape: u half')
-		elif u_full_start_index <= i <= u_full_end_index:
-			print('shape: u full')
-
 
 		if err < rtol * norm_Y: break
 
