@@ -28,7 +28,9 @@ def main(input_filename, output_filename, num_iterations):
 
 	D = []
 	FD = []
-	'''
+
+	rect_start_index = 0
+	rect_end_index = 0
 	# define rectangle generators
 	max_aspect = 5
 	lengths = np.arange(2, 105, 2)
@@ -42,8 +44,11 @@ def main(input_filename, output_filename, num_iterations):
 				Fg = np.conj(Fg)
 				D.append(g)
 				FD.append(Fg)
-
+				rect_end_index = rect_end_index + 1
+	print('rect_end_index: ', rect_end_index)
 	# define L shape generators
+	l_start_index = rect_end_index
+	l_end_index = rect_end_index
 	max_aspect = 4
 	min_aspect = 1.5
 	width_lengths = np.arange(50, 105, 2)
@@ -66,8 +71,11 @@ def main(input_filename, output_filename, num_iterations):
 							Fg = np.conj(Fg)
 							D.append(g)
 							FD.append(Fg)
-	
+							l_end_index = l_end_index + 1
+	print('l_end_index: ', l_end_index)
 	# define T shape generators
+	t_start_index = l_end_index
+	t_end_index = l_end_index
 	max_aspect = 4
 	min_aspect = 2
 	max_aspect_l2 = 1.0
@@ -95,8 +103,11 @@ def main(input_filename, output_filename, num_iterations):
 								Fg = np.conj(Fg)
 								D.append(g)
 								FD.append(Fg)
-	
+								t_end_index = t_end_index + 1
+	print('t_end_index: ', t_end_index)
 	# define half U shape generators
+	u_start_index = t_end_index
+	u_end_index = t_end_index
 	max_aspect = 4
 	min_aspect = 2
 	width_lengths = np.arange(30, 105, 2)
@@ -124,9 +135,12 @@ def main(input_filename, output_filename, num_iterations):
 							Fg = np.conj(Fg)
 							D.append(g)
 							FD.append(Fg)
-	'''
+							u_end_index = u_end_index + 1
+	print('u_end_index: ', u_end_index)
 	# define full U shape generators
-	index = 0
+	u_full_start_index = u_end_index
+	u_full_end_index = u_end_index
+	'''
 	max_aspect = 2
 	min_aspect = 0
 	max_aspect_l2 = 4
@@ -158,7 +172,9 @@ def main(input_filename, output_filename, num_iterations):
 							Fg = np.conj(Fg)
 							D.append(g)
 							FD.append(Fg)
-
+							u_full_end_index = u_full_end_index + 1
+	'''
+	print('u_full_end_index: ', u_full_end_index)
 	FD = np.array(FD)
 	
 	# solve by matching pursuit
@@ -217,6 +233,20 @@ def main(input_filename, output_filename, num_iterations):
 		err = np.sum(residual)
 		
 		print('iter:', iter, 'index:', (i, tx, ty), 'err:', err/norm_Y, sep='\t')
+		if rect_start_index <= i <= rect_end_index:
+			print('shape: rectangle')
+		elif l_start_index <= i <= l_end_index:
+			print('shape: L')
+		elif l_start_index <= i <= l_end_index:
+			print('shape: L')
+		elif t_start_index <= i <= t_end_index:
+			print('shape: T')
+		elif u_start_index <= i <= u_end_index:
+			print('shape: u half')
+		elif u_full_start_index <= i <= u_full_end_index:
+			print('shape: u full')
+
+
 		if err < rtol * norm_Y: break
 
 	# generate result image
