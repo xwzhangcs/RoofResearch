@@ -21,13 +21,14 @@ def main(input_filename, output_filename, num_iterations):
 	# resize to 128 x 128
 	Y = misc.imresize(Y, (128, 128)) / 255
 	Y[Y < 0.6] = 0
-	# misc.imsave('data/resize_0100.png', (Y * 255).astype(np.uint8))
+	Y[Y >= 0.6] = 1.0
+	misc.imsave('data/resize_0112.png', (Y * 255).astype(np.uint8))
 	#norm_Y = np.sqrt(np.inner(Y.flat, Y.flat))
 	norm_Y = np.sum(Y)
 
 	D = []
 	FD = []
-
+	'''
 	# define rectangle generators
 	max_aspect = 5
 	lengths = np.arange(2, 105, 2)
@@ -42,7 +43,6 @@ def main(input_filename, output_filename, num_iterations):
 				D.append(g)
 				FD.append(Fg)
 
-	'''
 	# define L shape generators
 	max_aspect = 4
 	min_aspect = 1.5
@@ -66,7 +66,7 @@ def main(input_filename, output_filename, num_iterations):
 							Fg = np.conj(Fg)
 							D.append(g)
 							FD.append(Fg)
-	'''
+	
 	# define T shape generators
 	max_aspect = 4
 	min_aspect = 2
@@ -95,6 +95,69 @@ def main(input_filename, output_filename, num_iterations):
 								Fg = np.conj(Fg)
 								D.append(g)
 								FD.append(Fg)
+	
+	# define half U shape generators
+	max_aspect = 4
+	min_aspect = 2
+	width_lengths = np.arange(30, 105, 2)
+	width__l2_lengths = np.arange(2, 105, 2)
+	height_lengths = np.arange(2, 105, 2)
+	for width in width_lengths:
+		for height in height_lengths:
+			if min_aspect <= width / height <= max_aspect:
+				for width_l2 in width__l2_lengths:
+					for height_l2 in height_lengths:
+						if min_aspect <= height_l2 / width_l2 <= max_aspect and width * 0.2 <= width_l2 <= width * 0.4 \
+								and height_l2 >= height and 64 + height_l2 < 110 \
+								and 64 - int(width / 2) - int(width_l2 / 2) >= 10 \
+								and 64 + int(width / 2) + int(width_l2 / 2) <= 110:
+							g = np.zeros((128, 128), np.float)
+							g = cv2.rectangle(g, (64 - int(width / 2), 64 - int(height / 2)),
+											  (64 + int(width / 2), 64 + int(height / 2)), (1.0), -1)
+							g = cv2.rectangle(g, (64 - int(width / 2) - int(width_l2 / 2), 64),
+											  (64 - int(width / 2) + int(width_l2 / 2), 64 + height_l2), (1.0), -1)
+							g = cv2.rectangle(g, (64 + int(width / 2) - int(width_l2 / 2), 64),
+											  (64 + int(width / 2) + int(width_l2 / 2), 64 + height_l2), (1.0), -1)
+							g = rotate(g, 90, reshape=False)
+							g /= np.sqrt(np.sum(g * g))
+							Fg = np.fft.fftn(g)
+							Fg = np.conj(Fg)
+							D.append(g)
+							FD.append(Fg)
+	'''
+	# define full U shape generators
+	index = 0
+	max_aspect = 2
+	min_aspect = 0
+	max_aspect_l2 = 4
+	min_aspect_l2 = 1
+	width_lengths = np.arange(15, 60, 2)
+	height_lengths = np.arange(15, 60, 2)
+	width_l2_lengths = np.arange(10, 60, 2)
+	height_l2_lengths = np.arange(30, 60, 2)
+	for width in width_lengths:
+		for height in height_lengths:
+			if min_aspect <= width / height <= max_aspect:
+				for width_l2 in width_l2_lengths:
+					for height_l2 in height_l2_lengths:
+						if min_aspect_l2 <= height_l2 / width_l2 <= max_aspect_l2 and height_l2 >= height * 1.5 \
+								and 64 - int(height / 2) + height_l2 < 110 \
+								and 64 - int(width / 2) - width_l2 >= 10 \
+								and 64 + int(width / 2) + width_l2 / 2 <= 110:
+							g = np.zeros((128, 128), np.float)
+							g = cv2.rectangle(g, (64 - int(width / 2), 64 - int(height / 2)),
+											  (64 + int(width / 2), 64 + int(height / 2)), (1.0), -1)
+							g = cv2.rectangle(g, (64 - int(width / 2) - width_l2, 64 - int(height / 2)),
+											  (64 - int(width / 2), 64 - int(height / 2) + height_l2), (1.0), -1)
+							g = cv2.rectangle(g, (64 + int(width / 2), 64 - int(height / 2)),
+											  (64 + int(width / 2) + width_l2, 64 - int(height / 2) + height_l2), (1.0),
+											  -1)
+							g = rotate(g, 90, reshape=False)
+							g /= np.sqrt(np.sum(g * g))
+							Fg = np.fft.fftn(g)
+							Fg = np.conj(Fg)
+							D.append(g)
+							FD.append(Fg)
 
 	FD = np.array(FD)
 	
@@ -140,14 +203,14 @@ def main(input_filename, output_filename, num_iterations):
 		
 		# don't allow each pixel having a value greater than the input
 		#Y2 = np.minimum(Y2, Y)
-		Y2[Y2 > 1] = 1
+		Y2[Y2 > 0.5] = 1
 		
 		misc.imsave('results/result_' + str(iter) + '.png', (Y2 * 255).astype(np.uint8))
 		
 		# update residual
 		residual = Y - Y2
 		residual[residual < 0] = 0
-		#misc.imsave('residual_' + str(iter) + '.png', (residual * 255).astype(np.uint8))
+		misc.imsave('results/residual_' + str(iter) + '.png', (residual * 255).astype(np.uint8))
 		
 		# check stoppping criteria
 		#err = np.sqrt(np.inner(residual.flat, residual.flat))
