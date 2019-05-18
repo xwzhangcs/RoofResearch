@@ -107,7 +107,7 @@
       <FunctionLevelLinking>true</FunctionLevelLinking>
       <IntrinsicFunctions>true</IntrinsicFunctions>
       <SDLCheck>true</SDLCheck>
-      <AdditionalIncludeDirectories>$(BOOST_INCLUDEDIR);C:\CGAL-4.11.1\include;C:\CGAL-4.11.1\auxiliary\gmp\include;..\opencv3.4\include;..\include;..\gdal\include</AdditionalIncludeDirectories>
+      <AdditionalIncludeDirectories>$(BOOST_INCLUDEDIR);C:\CGAL-4.11.1\include;C:\CGAL-4.11.1\auxiliary\gmp\include;..\opencv3.4\include;..\include;..\gdal\include;$(DLIB)</AdditionalIncludeDirectories>
     </ClCompile>
     <Link>
       <GenerateDebugInformation>true</GenerateDebugInformation>
