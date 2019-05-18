@@ -26,7 +26,7 @@ def rectangle_generator():
 				Fg = np.conj(Fg)
 				D.append(g)
 				FD.append(Fg)
-	return FD
+	return D, FD
 
 def l_generator():
 	# define L shape generators
@@ -54,10 +54,12 @@ def l_generator():
 							Fg = np.conj(Fg)
 							D.append(g)
 							FD.append(Fg)
-	return FD
+	return D, FD
 
 def t_generator():
 	# define T shape generators
+	D = []
+	FD = []
 	max_aspect = 4
 	min_aspect = 2
 	max_aspect_l2 = 1.0
@@ -85,10 +87,12 @@ def t_generator():
 								Fg = np.conj(Fg)
 								D.append(g)
 								FD.append(Fg)
-	return FD
+	return D, FD
 
 def u_half_generator():
 	# define half U shape generators
+	D = []
+	FD = []
 	max_aspect = 4
 	min_aspect = 2
 	width_lengths = np.arange(30, 105, 2)
@@ -116,10 +120,12 @@ def u_half_generator():
 							Fg = np.conj(Fg)
 							D.append(g)
 							FD.append(Fg)
-	return FD
+	return D, FD
 
 def u_whole_generator():
 	# define full U shape generators
+	D = []
+	FD = []
 	max_aspect = 2
 	min_aspect = 0
 	max_aspect_l2 = 4
@@ -151,7 +157,7 @@ def u_whole_generator():
 							Fg = np.conj(Fg)
 							D.append(g)
 							FD.append(Fg)
-	return FD
+	return D, FD
 
 def main(input_filename, output_filename, num_iterations):
 	# load image
@@ -173,7 +179,12 @@ def main(input_filename, output_filename, num_iterations):
 	FD = []
 
 	# apply generators
-	FD.extend(rectangle_generator())
+	shape_1, shape_2 = rectangle_generator()
+	D.extend(shape_1)
+	FD.extend(shape_2)
+	shape_1, shape_2 = t_generator()
+	D.extend(shape_1)
+	FD.extend(shape_2)
 
 	FD = np.array(FD)
 	
