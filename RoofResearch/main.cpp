@@ -39,7 +39,7 @@ void translate_bld_ndsm(const char* mask_tiff, std::string output_img_file, floa
 void translate_entropy_imgs(std::string entropy_file, float threshold, std::string output_img_file);
 void transform2roofFit(std::string src_img_file, std::string output_img_file);
 void clustering_kkmeans(std::string src_img_file, std::string output_img_file, int clusters);
-
+void clustering_kkmeans_mask(std::string src_img_file, std::string mask_img_file, std::string output_img_file, int clusters);
 
 int main(int argc, char** argv)
 {
@@ -47,7 +47,11 @@ int main(int argc, char** argv)
 	//transform2roofFit("../data/roofFit/building_cluster_0099__segment_oriented.png", "../data/roofFit/building_cluster_0099.png");
 	//transform2roofFit("../data/roofFit/building_cluster_0112__segment_oriented.png", "../data/roofFit/building_cluster_0112.png");
 	//generate_from_mask_oriented("../data/D4");
-	clustering_kkmeans("../data/building_cluster_0034__OrthoPAN_oriented.png", "../data/output_3.png", 3);
+	std::string building = "0220";
+	std::string pan_img_file = "../data/building_cluster_" + building + "__OrthoPAN_oriented.png";
+	std::string mask_img_file = "../data/building_cluster_" + building + "__segment_oriented.png";
+	std::string output_img_file = "../data/building_cluster_" + building + "__clustering.png";
+	clustering_kkmeans_mask(pan_img_file, mask_img_file, output_img_file, 2);
 	system("pause");
 	return 0;
 }
@@ -72,7 +76,7 @@ void clustering_kkmeans(std::string src_img_file, std::string output_img_file, i
 	// (and thus run slower and use more memory).  The third argument, however, is the 
 	// maximum number of dictionary vectors a kcentroid is allowed to use.  So you can use
 	// it to control the runtime complexity.  
-	kcentroid<kernel_type> kc(kernel_type(0.1), 0.01, 16);
+	kcentroid<kernel_type> kc(kernel_type(0.2), 0.01, 16);
 
 	// Now we make an instance of the kkmeans object and tell it to use kcentroid objects
 	// that are configured with the parameters from the kc object we defined above.
@@ -84,14 +88,19 @@ void clustering_kkmeans(std::string src_img_file, std::string output_img_file, i
 	cv::Mat src_img = cv::imread(src_img_file, CV_LOAD_IMAGE_UNCHANGED);
 	sample_type m(src_img.channels());
 
+	// only do clustering on the not-background pixes
 	for (int i = 0; i < src_img.size().height; i++) {
 		for (int j = 0; j < src_img.size().width; j++) {
 			if (src_img.channels() == 3) {
+				if (src_img.at<cv::Vec3b>(i, j)[0] == 0 && src_img.at<cv::Vec3b>(i, j)[1] == 0 && src_img.at<cv::Vec3b>(i, j)[2] == 0)
+					continue;
 				m(0) = src_img.at<cv::Vec3b>(i, j)[0] * 1.0 / 255;
 				m(1) = src_img.at<cv::Vec3b>(i, j)[1] * 1.0 / 255;
 				m(2) = src_img.at<cv::Vec3b>(i, j)[2] * 1.0 / 255;
 			}
 			else {
+				if ((int)src_img.at<uchar>(i, j) == 0)
+					continue;
 				m(0) = (int)src_img.at<uchar>(i, j) * 1.0 / 255;
 			}
 			// add this sample to our set of samples we will run k-means 
@@ -171,6 +180,151 @@ void clustering_kkmeans(std::string src_img_file, std::string output_img_file, i
 				out_img.at<cv::Vec3b>(i, j)[1] = clusters_colors[test(samples[count])][1];
 				out_img.at<cv::Vec3b>(i, j)[2] = clusters_colors[test(samples[count])][2];
 			}*/
+			if (src_img.channels() == 3) {
+				if (src_img.at<cv::Vec3b>(i, j)[0] == 0 && src_img.at<cv::Vec3b>(i, j)[1] == 0 && src_img.at<cv::Vec3b>(i, j)[2] == 0)
+					continue;
+			}
+			else {
+				if ((int)src_img.at<uchar>(i, j) == 0)
+					continue;
+			}
+			out_img.at<cv::Vec3b>(i, j)[0] = clusters_colors[test(samples[count])][0];
+			out_img.at<cv::Vec3b>(i, j)[1] = clusters_colors[test(samples[count])][1];
+			out_img.at<cv::Vec3b>(i, j)[2] = clusters_colors[test(samples[count])][2];
+			count++;
+		}
+	}
+
+	cv::imwrite(output_img_file, out_img);
+}
+
+void clustering_kkmeans_mask(std::string src_img_file, std::string mask_img_file, std::string output_img_file, int clusters){
+	// Here we declare that our samples will be 2 dimensional column vectors.  
+	// (Note that if you don't know the dimensionality of your vectors at compile time
+	// you can change the 2 to a 0 and then set the size at runtime)
+	typedef matrix<double, 0, 1> sample_type;
+	// Now we are making a typedef for the kind of kernel we want to use.  I picked the
+	// radial basis kernel because it only has one parameter and generally gives good
+	// results without much fiddling.
+	typedef radial_basis_kernel<sample_type> kernel_type;
+
+
+	// Here we declare an instance of the kcentroid object.  It is the object used to 
+	// represent each of the centers used for clustering.  The kcentroid has 3 parameters 
+	// you need to set.  The first argument to the constructor is the kernel we wish to 
+	// use.  The second is a parameter that determines the numerical accuracy with which 
+	// the object will perform part of the learning algorithm.  Generally, smaller values 
+	// give better results but cause the algorithm to attempt to use more dictionary vectors 
+	// (and thus run slower and use more memory).  The third argument, however, is the 
+	// maximum number of dictionary vectors a kcentroid is allowed to use.  So you can use
+	// it to control the runtime complexity.  
+	kcentroid<kernel_type> kc(kernel_type(0.15), 0.01, 16);
+
+	// Now we make an instance of the kkmeans object and tell it to use kcentroid objects
+	// that are configured with the parameters from the kc object we defined above.
+	kkmeans<kernel_type> test(kc);
+
+	std::vector<sample_type> samples;
+	std::vector<sample_type> initial_centers;
+
+	cv::Mat src_img = cv::imread(src_img_file, CV_LOAD_IMAGE_UNCHANGED);
+	cv::Mat mask_img = cv::imread(mask_img_file, CV_LOAD_IMAGE_UNCHANGED);
+	sample_type m(src_img.channels());
+
+	// only do clustering on the not-background pixes
+	for (int i = 0; i < src_img.size().height; i++) {
+		for (int j = 0; j < src_img.size().width; j++) {
+			if (src_img.channels() == 3) {
+				if ((int)mask_img.at<uchar>(i, j) == 0)
+					continue;
+				m(0) = src_img.at<cv::Vec3b>(i, j)[0] * 1.0 / 255;
+				m(1) = src_img.at<cv::Vec3b>(i, j)[1] * 1.0 / 255;
+				m(2) = src_img.at<cv::Vec3b>(i, j)[2] * 1.0 / 255;
+			}
+			else {
+				if ((int)mask_img.at<uchar>(i, j) == 0)
+					continue;
+				m(0) = (int)src_img.at<uchar>(i, j) * 1.0 / 255;
+			}
+			// add this sample to our set of samples we will run k-means 
+			samples.push_back(m);
+		}
+	}
+
+	// tell the kkmeans object we made that we want to run k-means with k set to 3. 
+	// (i.e. we want 3 clusters)
+	test.set_number_of_centers(clusters);
+
+	// You need to pick some initial centers for the k-means algorithm.  So here
+	// we will use the dlib::pick_initial_centers() function which tries to find
+	// n points that are far apart (basically).  
+	pick_initial_centers(clusters, initial_centers, samples, test.get_kernel());
+
+	// now run the k-means algorithm on our set of samples.  
+	test.train(samples, initial_centers);
+
+	std::vector<cv::Scalar> clusters_colors;
+	std::vector<int> clusters_points;
+	clusters_colors.resize(clusters);
+	clusters_points.resize(clusters);
+	cv::RNG rng(12345);
+	for (int i = 0; i < clusters; i++) {
+		cv::Scalar color = cv::Scalar(rng.uniform(0, 255), rng.uniform(0, 255), rng.uniform(0, 255));
+		clusters_colors[i] = color;
+		clusters_points[i] = 0;
+	}
+
+	int count = 0;
+	/*
+	if (src_img.channels() == 3) {
+	count = 0;
+	for (int i = 0; i < src_img.size().height; i++) {
+	for (int j = 0; j < src_img.size().width; j++) {
+	clusters_colors[test(samples[count])][0] += src_img.at<cv::Vec3b>(i, j)[0];
+	clusters_colors[test(samples[count])][1] += src_img.at<cv::Vec3b>(i, j)[1];
+	clusters_colors[test(samples[count])][2] += src_img.at<cv::Vec3b>(i, j)[2];
+	clusters_points[test(samples[count])] ++;
+	count++;
+	}
+	}
+	for (int i = 0; i < clusters; i++) {
+	clusters_colors[i][0] = clusters_colors[i][0] / clusters_points[i];
+	clusters_colors[i][1] = clusters_colors[i][1] / clusters_points[i];
+	clusters_colors[i][2] = clusters_colors[i][2] / clusters_points[i];
+	}
+	}
+	else if (src_img.channels() == 1) { //gray image
+	int count = 0;
+	for (int i = 0; i < src_img.size().height; i++) {
+	for (int j = 0; j < src_img.size().width; j++) {
+	clusters_colors[test(samples[count])][0] += (int)src_img.at<uchar>(i, j);
+	clusters_points[test(samples[count])] ++;
+	count++;
+	}
+	}
+	for (int i = 0; i < clusters; i++) {
+	clusters_colors[i][0] = clusters_colors[i][0] / clusters_points[i];
+	}
+	}
+	else {
+	//do nothing
+	}
+	*/
+	cv::Scalar bg_color(0, 0, 0); // black for background
+	cv::Mat out_img(cv::Size(src_img.size().width, src_img.size().height), CV_8UC3, bg_color);
+	count = 0;
+	for (int i = 0; i < out_img.size().height; i++) {
+		for (int j = 0; j < out_img.size().width; j++) {
+			/*if (src_img.channels() == 1){
+			out_img.at<uchar>(i, j) = (uchar)clusters_colors[test(samples[count])][0];
+			}
+			else{
+			out_img.at<cv::Vec3b>(i, j)[0] = clusters_colors[test(samples[count])][0];
+			out_img.at<cv::Vec3b>(i, j)[1] = clusters_colors[test(samples[count])][1];
+			out_img.at<cv::Vec3b>(i, j)[2] = clusters_colors[test(samples[count])][2];
+			}*/
+			if ((int)mask_img.at<uchar>(i, j) == 0)
+				continue;
 			out_img.at<cv::Vec3b>(i, j)[0] = clusters_colors[test(samples[count])][0];
 			out_img.at<cv::Vec3b>(i, j)[1] = clusters_colors[test(samples[count])][1];
 			out_img.at<cv::Vec3b>(i, j)[2] = clusters_colors[test(samples[count])][2];
