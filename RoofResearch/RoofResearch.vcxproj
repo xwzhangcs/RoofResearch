@@ -118,10 +118,17 @@
     </Link>
   </ItemDefinitionGroup>
   <ItemGroup>
+    <ClCompile Include="roofA.cpp" />
     <ClCompile Include="main.cpp" />
+    <ClCompile Include="RoofUtils.cpp" />
+    <ClCompile Include="Utils.cpp" />
   </ItemGroup>
   <ItemGroup>
+    <ClInclude Include="roofA.h" />
     <ClInclude Include="print.h" />
+    <ClInclude Include="roofTypes.h" />
+    <ClInclude Include="RoofUtils.h" />
+    <ClInclude Include="Utils.h" />
   </ItemGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.targets" />
   <ImportGroup Label="ExtensionTargets">
