@@ -1,19 +1,16 @@
 #pragma once
+#define _CRT_SECURE_NO_WARNINGS
 
 #include <opencv2/opencv.hpp>
 #include <vector>
 
-class FacadeA {
-private:
-	static std::pair<int, int> range_NF;
-	static std::pair<int, int> range_NC;
+class RoofA {
 
 protected:
-	FacadeA() {}
+	RoofA() {}
 
 public:
-	static cv::Mat generateFacade(int width, int height, int thickness, int num_floors, int num_columns, const std::vector<float>& params, const std::vector<int>& selected_win_types, const cv::Scalar& bg_color, const cv::Scalar& fg_color);
-	static void decodeParams(float width, float height, int num_floors, int num_columns, std::vector<float> params, const std::vector<int>& selected_win_types, int mass_grammar_id, std::vector<float>& decoded_params);
-	static cv::Mat generateRandomFacade(int width, int height, int thickness, std::vector<float>& params, float window_displacement = 0, float window_prob = 1);
-	static cv::Mat generateFacade(int width, int height, int thickness, const cv::Scalar& bg_color, const cv::Scalar& fg_color, float GH, float FH, float AH, float SW, float TW, float WT, float WH, float WB, float WS, float WW, float window_displacement = 0, float window_prob = 1);
+	static cv::Mat generateRoof(int width, int height, int roofWidth, double roofAspect, int selected_roof_type, double ridgeRatio, const cv::Scalar& bg_color, const cv::Scalar& fg_color);
+	static void generateRoofImages(std::string roofImagesPath, int imageNum, int width, int height, std::pair<int, int> roofWidth, std::pair<double, double> roofAspect, int selected_roof_type, std::pair<double, double> ridgeRatio, const cv::Scalar& bg_color, const cv::Scalar& fg_color);
+
 };
