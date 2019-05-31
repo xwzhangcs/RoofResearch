@@ -27,6 +27,9 @@
     <ClCompile Include="roofA.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
+    <ClCompile Include="roofB.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="print.h">
@@ -42,6 +45,9 @@
       <Filter>Header Files</Filter>
     </ClInclude>
     <ClInclude Include="roofTypes.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="roofB.h">
       <Filter>Header Files</Filter>
     </ClInclude>
   </ItemGroup>
