@@ -101,7 +101,7 @@ void RoofA::generateRoofImages(std::string roofImagesPath, int imageNum, int wid
 			// do nothing
 		}
 		char buffer[50];
-		sprintf(buffer, "/facade_image_%06d.png", index);
+		sprintf(buffer, "/roofA_image_%06d.png", index);
 		std::string img_filename = roofImagesPath + std::string(buffer);
 		cv::imwrite(img_filename, result);
 		index++;
