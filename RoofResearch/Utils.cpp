@@ -88,4 +88,64 @@ namespace utils {
 		std::cout << std::endl;
 	}
 
+	cv::Point2f RotatePoint(const cv::Point2f& p, float rad)
+	{
+		const float x = std::cos(rad) * p.x - std::sin(rad) * p.y;
+		const float y = std::sin(rad) * p.x + std::cos(rad) * p.y;
+
+		const cv::Point2f rot_p(x, y);
+		return rot_p;
+	}
+
+	cv::Point2f RotatePoint(const cv::Point2f& cen_pt, const cv::Point2f& p, float rad)
+	{
+		const cv::Point2f trans_pt = p - cen_pt;
+		const cv::Point2f rot_pt = RotatePoint(trans_pt, rad);
+		const cv::Point2f fin_pt = rot_pt + cen_pt;
+
+		return fin_pt;
+	}
+
+	bool lineLineIntersection(const cv::Point2f& a, const cv::Point2f& b, const cv::Point2f& c, const cv::Point2f& d, double *tab, double *tcd, bool segment_only, cv::Point2f& int_pt) {
+		cv::Point2f u = b - a;
+		cv::Point2f v = d - c;
+
+		if (cv::norm(u) < 0.0000001 || cv::norm(v) < 0.0000001) {
+			return false;
+		}
+
+		double numer = v.x * (c.y - a.y) + v.y * (a.x - c.x);
+		double denom = u.y * v.x - u.x * v.y;
+
+		if (denom == 0.0)  {
+			// they are parallel
+			return false;
+		}
+
+		double t0 = numer / denom;
+
+		cv::Point2f ipt = a + t0*u;
+		cv::Point2f tmp = ipt - c;
+		double t1;
+		if (tmp.dot(v) > 0.0) {
+			t1 = cv::norm(tmp) / cv::norm(v);
+		}
+		else {
+			t1 = -1.0 * cv::norm(tmp) / cv::norm(d - c);
+		}
+
+		// check if intersection is within the segments
+		if (segment_only && !((t0 >= 0.0000001) && (t0 <= 1.0 - 0.0000001) && (t1 >= 0.0000001) && (t1 <= 1.0 - 0.0000001))) {
+			return false;
+		}
+
+		*tab = t0;
+		*tcd = t1;
+		cv::Point2f dirVec = b - a;
+
+		int_pt = a + t0 * dirVec;
+
+		return true;
+	}
+
 }
