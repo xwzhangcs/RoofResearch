@@ -6,6 +6,7 @@
 #include "roofB.h"
 #include "roofC.h"
 #include "roofD.h"
+#include "roofE.h"
 
 int main(int argc, char** argv)
 {
@@ -25,10 +26,17 @@ int main(int argc, char** argv)
 	cv::imwrite("../data/roofC_hip_test.png", result);
 	RoofC::generateRoofImages("../data", 2, 224, 224, 10, std::make_pair(80, 100), std::make_pair(0.3, 0.7), std::make_pair(80, 100), std::make_pair(0.3, 0.5), std::make_pair(-35, -25), RoofTypes::GABLE, std::make_pair(0.5, 0.8), std::make_pair(0.5, 0.8), cv::Scalar(0, 0, 0), cv::Scalar(255, 255, 255));
 	system("pause");*/
-	cv::Mat result = RoofD::generateRoof(224, 224, 100, 0.4, 0.4, 2.0, RoofTypes::FLAT, 0, 0.0, cv::Scalar(0, 0, 0), cv::Scalar(255, 255, 255));
+	/*cv::Mat result = RoofD::generateRoof(224, 224, 100, 0.4, 0.4, 2.0, RoofTypes::FLAT, 0, 0.0, cv::Scalar(0, 0, 0), cv::Scalar(255, 255, 255));
 	cv::imwrite("../data/roofD_flat_test.png", result);
 	result = RoofD::generateRoof(224, 224, 100, 0.4, 0.4, 2.0, RoofTypes::GABLE, 0, 0.0, cv::Scalar(0, 0, 0), cv::Scalar(255, 255, 255));
-	cv::imwrite("../data/roofD_gable_test.png", result);
+	cv::imwrite("../data/roofD_gable_test.png", result);*/
+
+	cv::Mat result = RoofE::generateRoof(224, 224, 100, 0.4, 0.4, 2.0, 0.3, RoofTypes::FLAT, 0, 0.0, cv::Scalar(0, 0, 0), cv::Scalar(255, 255, 255));
+	cv::imwrite("../data/roofE_flat_test.png", result);
+	result = RoofE::generateRoof(224, 224, 100, 0.4, 0.4, 2.0, 0.3, RoofTypes::GABLE, 0, 0.0, cv::Scalar(0, 0, 0), cv::Scalar(255, 255, 255));
+	cv::imwrite("../data/roofE_gable_test.png", result);
+	result = RoofE::generateRoof(224, 224, 100, 0.4, 0.4, 2.0, 0.0, RoofTypes::HIP, 0.6, 0.6, cv::Scalar(0, 0, 0), cv::Scalar(255, 255, 255));
+	cv::imwrite("../data/roofE_hip_test.png", result);
 	system("pause");
 	return 0;
 }

@@ -123,6 +123,7 @@
     <ClCompile Include="roofB.cpp" />
     <ClCompile Include="roofC.cpp" />
     <ClCompile Include="roofD.cpp" />
+    <ClCompile Include="roofE.cpp" />
     <ClCompile Include="RoofUtils.cpp" />
     <ClCompile Include="Utils.cpp" />
   </ItemGroup>
@@ -132,6 +133,7 @@
     <ClInclude Include="roofB.h" />
     <ClInclude Include="roofC.h" />
     <ClInclude Include="roofD.h" />
+    <ClInclude Include="roofE.h" />
     <ClInclude Include="roofTypes.h" />
     <ClInclude Include="RoofUtils.h" />
     <ClInclude Include="Utils.h" />

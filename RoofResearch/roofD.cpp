@@ -95,6 +95,87 @@ void RoofD::generateRoofImages(std::string roofImagesPath, int imageNum, int wid
 	int index = 0;
 	for (int l = 0; l < imageNum; l++){
 		cv::Mat result(height, width, CV_8UC3, bg_color);
+		int imageRoofWidth_main = utils::genRand(roofWidth_main.first, roofWidth_main.second + 1);
+		double imageRoofAspect_main = utils::genRand(roofAspect_main.first, roofAspect_main.second);
+		int imageRoofHeight_main = imageRoofWidth_main * imageRoofAspect_main;
+		int imageRoofWidth_sub = utils::genRand(roofWidthRatio_sub.first, roofWidthRatio_sub.second) * imageRoofWidth_main;
+		double imageRoofAspect_sub = utils::genRand(roofAspect_sub.first, roofAspect_sub.second);
+		int imageRoofHeight_sub = imageRoofWidth_sub * imageRoofAspect_sub;
+
+		int thickness = 2;
+		if (selected_roof_type == RoofTypes::FLAT){
+			// add the first part
+			int upper_left_w_main = (width - imageRoofWidth_main) * 0.5;
+			int upper_left_h_main = (height - imageRoofHeight_main) * 0.5;
+			int bottom_right_w_main = upper_left_w_main + imageRoofWidth_main;
+			int bottom_right_h_main = upper_left_h_main + imageRoofHeight_main;
+			cv::rectangle(result, cv::Point(upper_left_w_main, upper_left_h_main), cv::Point(bottom_right_w_main, bottom_right_h_main), fg_color, thickness);
+			// add the left part
+			int upper_left_w_sub = upper_left_w_main - imageRoofWidth_sub * 0.5;
+			int upper_left_h_sub = bottom_right_h_main - imageRoofHeight_main * 0.5;
+			int bottom_right_w_sub = upper_left_w_sub + imageRoofWidth_sub;
+			int bottom_right_h_sub = upper_left_h_sub + imageRoofHeight_sub;
+			cv::rectangle(result, cv::Point(upper_left_w_sub, upper_left_h_sub), cv::Point(bottom_right_w_sub, bottom_right_h_sub), fg_color, thickness);
+			// remove the common rectangle
+			cv::line(result, cv::Point(upper_left_w_main + thickness, upper_left_h_sub), cv::Point(bottom_right_w_sub, upper_left_h_sub), bg_color, thickness);
+			cv::line(result, cv::Point(bottom_right_w_sub, upper_left_h_sub), cv::Point(bottom_right_w_sub, bottom_right_h_main - thickness), bg_color, thickness);
+			cv::line(result, cv::Point(upper_left_w_main, upper_left_h_sub + thickness), cv::Point(upper_left_w_main, bottom_right_h_main), bg_color, thickness);
+			cv::line(result, cv::Point(upper_left_w_main, bottom_right_h_main), cv::Point(bottom_right_w_sub - thickness, bottom_right_h_main), bg_color, thickness);
+			// add the right part
+			upper_left_w_sub = bottom_right_w_main - imageRoofWidth_sub * 0.5;
+			upper_left_h_sub = bottom_right_h_main - imageRoofHeight_main * 0.5;
+			bottom_right_w_sub = upper_left_w_sub + imageRoofWidth_sub;
+			bottom_right_h_sub = upper_left_h_sub + imageRoofHeight_sub;
+			cv::rectangle(result, cv::Point(upper_left_w_sub, upper_left_h_sub), cv::Point(bottom_right_w_sub, bottom_right_h_sub), fg_color, thickness);
+			// remove the common rectangle
+			cv::line(result, cv::Point(upper_left_w_sub, upper_left_h_sub), cv::Point(bottom_right_w_main - thickness, upper_left_h_sub), bg_color, thickness);
+			cv::line(result, cv::Point(upper_left_w_sub, upper_left_h_sub), cv::Point(upper_left_w_sub, bottom_right_h_main - thickness), bg_color, thickness);
+			cv::line(result, cv::Point(bottom_right_w_main, upper_left_h_sub + thickness), cv::Point(bottom_right_w_main, bottom_right_h_main), bg_color, thickness);
+			cv::line(result, cv::Point(bottom_right_w_main, bottom_right_h_main), cv::Point(upper_left_w_sub + thickness, bottom_right_h_main), bg_color, thickness);
+		}
+		else if (selected_roof_type == RoofTypes::GABLE){
+			// add the first part
+			int upper_left_w_main = (width - imageRoofWidth_main) * 0.5;
+			int upper_left_h_main = (height - imageRoofHeight_main) * 0.5;
+			int bottom_right_w_main = upper_left_w_main + imageRoofWidth_main;
+			int bottom_right_h_main = upper_left_h_main + imageRoofHeight_main;
+			cv::rectangle(result, cv::Point(upper_left_w_main, upper_left_h_main), cv::Point(bottom_right_w_main, bottom_right_h_main), fg_color, thickness);
+			cv::line(result, cv::Point(upper_left_w_main, (upper_left_h_main + bottom_right_h_main)* 0.5), cv::Point(bottom_right_w_main, (upper_left_h_main + bottom_right_h_main)* 0.5), fg_color, thickness);
+			// add the left part
+			int upper_left_w_sub = upper_left_w_main - imageRoofWidth_sub * 0.5;
+			int upper_left_h_sub = bottom_right_h_main - imageRoofHeight_main * 0.5;
+			int bottom_right_w_sub = upper_left_w_sub + imageRoofWidth_sub;
+			int bottom_right_h_sub = upper_left_h_sub + imageRoofHeight_sub;
+			cv::rectangle(result, cv::Point(upper_left_w_sub, upper_left_h_sub), cv::Point(bottom_right_w_sub, bottom_right_h_sub), fg_color, thickness);
+			// remove the common rectangle
+			cv::line(result, cv::Point(bottom_right_w_sub, upper_left_h_sub + thickness), cv::Point(bottom_right_w_sub, bottom_right_h_main - thickness), bg_color, thickness);
+			cv::line(result, cv::Point(upper_left_w_main, upper_left_h_sub + thickness), cv::Point(upper_left_w_main, bottom_right_h_main), bg_color, thickness);
+			cv::line(result, cv::Point(upper_left_w_main, bottom_right_h_main), cv::Point(bottom_right_w_sub - thickness, bottom_right_h_main), bg_color, thickness);
+			// add edges
+			cv::line(result, cv::Point((upper_left_w_sub + bottom_right_w_sub) * 0.5, upper_left_h_sub), cv::Point((upper_left_w_sub + bottom_right_w_sub) * 0.5, bottom_right_h_sub), fg_color, thickness);
+			cv::line(result, cv::Point((upper_left_w_sub + bottom_right_w_sub) * 0.5, upper_left_h_sub), cv::Point(bottom_right_w_sub, bottom_right_h_main), fg_color, thickness);
+
+			// add the right part
+			upper_left_w_sub = bottom_right_w_main - imageRoofWidth_sub * 0.5;
+			upper_left_h_sub = bottom_right_h_main - imageRoofHeight_main * 0.5;
+			bottom_right_w_sub = upper_left_w_sub + imageRoofWidth_sub;
+			bottom_right_h_sub = upper_left_h_sub + imageRoofHeight_sub;
+			cv::rectangle(result, cv::Point(upper_left_w_sub, upper_left_h_sub), cv::Point(bottom_right_w_sub, bottom_right_h_sub), fg_color, thickness);
+			// remove the common rectangle
+			cv::line(result, cv::Point(upper_left_w_sub, upper_left_h_sub + thickness), cv::Point(upper_left_w_sub, bottom_right_h_main - thickness), bg_color, thickness);
+			cv::line(result, cv::Point(bottom_right_w_main, upper_left_h_sub + thickness), cv::Point(bottom_right_w_main, bottom_right_h_main), bg_color, thickness);
+			cv::line(result, cv::Point(bottom_right_w_main, bottom_right_h_main), cv::Point(upper_left_w_sub + thickness, bottom_right_h_main), bg_color, thickness);
+			//add edges
+			cv::line(result, cv::Point((upper_left_w_sub + bottom_right_w_sub) * 0.5, upper_left_h_sub), cv::Point((upper_left_w_sub + bottom_right_w_sub) * 0.5, bottom_right_h_sub), fg_color, thickness);
+			cv::line(result, cv::Point((upper_left_w_sub + bottom_right_w_sub) * 0.5, upper_left_h_sub + thickness), cv::Point(upper_left_w_sub, bottom_right_h_main - thickness), fg_color, thickness);
+
+		}
+		else if (selected_roof_type == RoofTypes::HIP){
+			// not reasonable	
+		}
+		else{
+			// do nothing
+		}
 
 		char buffer[50];
 		sprintf(buffer, "/roofC_image_%06d.png", index);

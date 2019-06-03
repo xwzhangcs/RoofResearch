@@ -36,6 +36,9 @@
     <ClCompile Include="roofD.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
+    <ClCompile Include="roofE.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="print.h">
@@ -60,6 +63,9 @@
       <Filter>Header Files</Filter>
     </ClInclude>
     <ClInclude Include="roofD.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="roofE.h">
       <Filter>Header Files</Filter>
     </ClInclude>
   </ItemGroup>
