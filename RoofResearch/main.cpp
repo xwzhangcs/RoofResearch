@@ -7,6 +7,7 @@
 #include "roofC.h"
 #include "roofD.h"
 #include "roofE.h"
+#include "roofF.h"
 
 int main(int argc, char** argv)
 {
@@ -31,12 +32,19 @@ int main(int argc, char** argv)
 	result = RoofD::generateRoof(224, 224, 100, 0.4, 0.4, 2.0, RoofTypes::GABLE, 0, 0.0, cv::Scalar(0, 0, 0), cv::Scalar(255, 255, 255));
 	cv::imwrite("../data/roofD_gable_test.png", result);*/
 
-	cv::Mat result = RoofE::generateRoof(224, 224, 100, 0.4, 0.4, 2.0, 0.3, RoofTypes::FLAT, 0, 0.0, cv::Scalar(0, 0, 0), cv::Scalar(255, 255, 255));
+	/*cv::Mat result = RoofE::generateRoof(224, 224, 100, 0.4, 0.4, 2.0, 0.3, RoofTypes::FLAT, 0, 0.0, cv::Scalar(0, 0, 0), cv::Scalar(255, 255, 255));
 	cv::imwrite("../data/roofE_flat_test.png", result);
 	result = RoofE::generateRoof(224, 224, 100, 0.4, 0.4, 2.0, 0.3, RoofTypes::GABLE, 0, 0.0, cv::Scalar(0, 0, 0), cv::Scalar(255, 255, 255));
 	cv::imwrite("../data/roofE_gable_test.png", result);
 	result = RoofE::generateRoof(224, 224, 100, 0.4, 0.4, 2.0, 0.0, RoofTypes::HIP, 0.6, 0.6, cv::Scalar(0, 0, 0), cv::Scalar(255, 255, 255));
-	cv::imwrite("../data/roofE_hip_test.png", result);
+	cv::imwrite("../data/roofE_hip_test.png", result);*/
+	cv::Mat result = RoofF::generateRoof(224, 224, 100, 0.3, 0.4, 3.0, RoofTypes::FLAT, 0, 0.0, cv::Scalar(0, 0, 0), cv::Scalar(255, 255, 255));
+	cv::imwrite("../data/roofF_flat_test.png", result);
+	result = RoofF::generateRoof(224, 224, 100, 0.3, 0.4, 3.0, RoofTypes::GABLE, 0, 0.0, cv::Scalar(0, 0, 0), cv::Scalar(255, 255, 255));
+	cv::imwrite("../data/roofF_gable_test.png", result);
+	result = RoofF::generateRoof(224, 224, 100, 0.3, 0.4, 3.0, RoofTypes::HIP, 0.6, 0.7, cv::Scalar(0, 0, 0), cv::Scalar(255, 255, 255));
+	cv::imwrite("../data/roofF_hip_test.png", result);
+
 	system("pause");
 	return 0;
 }
