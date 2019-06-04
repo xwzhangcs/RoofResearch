@@ -43,5 +43,6 @@ namespace roof_utils {
 	void transform2roofFit(std::string src_img_file, std::string output_img_file);
 	void clustering_kkmeans(std::string src_img_file, std::string output_img_file, int clusters);
 	void clustering_kkmeans_mask(std::string src_img_file, std::string mask_img_file, std::string output_img_file, int clusters);
+	void findContours_from_colorList(std::string src_img_file, std::vector<cv::Scalar> colorList, std::string output_img_file);
 
 }

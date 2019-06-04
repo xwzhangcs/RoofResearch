@@ -417,6 +417,69 @@ namespace roof_utils {
 		cv::imwrite(output_img_file, erode_dst);
 	}
 
+	void findContours_from_colorList(std::string src_img_file, std::vector<cv::Scalar> colorList, std::string output_img_file){
+		cv::Mat src = cv::imread(src_img_file, CV_LOAD_IMAGE_UNCHANGED);
+		std::vector<int> colorChosen;
+		colorChosen.resize(colorList.size());
+		int clusters = 0;
+		for (int i = 0; i < colorList.size(); i++)
+			colorChosen[i] = 0;
+		for (int i = 0; i < src.size().height; i++){
+			for (int j = 0; j < src.size().width; j++){
+				for (int c = 0; c < colorList.size(); c++)
+					if (src.at<cv::Vec3b>(i, j)[0] == colorList[c][0] &&
+						src.at<cv::Vec3b>(i, j)[1] == colorList[c][1] &&
+						src.at<cv::Vec3b>(i, j)[2] == colorList[c][2] &&
+						colorChosen[c] == 0){
+						clusters++;
+						colorChosen[c] = 1;
+					}
+			}
+		}
+		std::cout << "clusters is " << clusters << std::endl;
+		cv::Scalar bg_color(0, 0, 0); // black for background
+		cv::Mat output_img(src.size(), CV_8UC3, bg_color);
+		int selected_clusters = 0;
+		for (int c = 0; c < colorList.size(); c++){
+			if (colorChosen[c] == 1){
+				cv::Mat cluster_img = src.clone();
+				for (int i = 0; i < src.size().height; i++){
+					for (int j = 0; j < src.size().width; j++){
+						if (cluster_img.at<cv::Vec3b>(i, j)[0] != colorList[c][0] ||
+							cluster_img.at<cv::Vec3b>(i, j)[1] != colorList[c][1] ||
+							cluster_img.at<cv::Vec3b>(i, j)[2] != colorList[c][2])
+						{
+							cluster_img.at<cv::Vec3b>(i, j)[0] = bg_color[0];
+							cluster_img.at<cv::Vec3b>(i, j)[1] = bg_color[1];
+							cluster_img.at<cv::Vec3b>(i, j)[2] = bg_color[2];
+						}
+					}
+				}
+				// find contour
+				cv::Mat cluster_gray;
+				cvtColor(cluster_img, cluster_gray, CV_BGR2GRAY);
+				std::vector<std::vector<cv::Point> > contours;
+				std::vector<cv::Vec4i> hierarchy;
+				float threshod = 0.09;
+				cv::findContours(cluster_gray, contours, hierarchy, CV_RETR_TREE, CV_CHAIN_APPROX_SIMPLE, cv::Point(0, 0));
+				for (size_t i = 0; i< contours.size(); i++)
+				{
+					float area_contour = cv::contourArea(contours[i]);
+					float ratio = area_contour / (src.size().height * src.size().width);
+					std::cout << "ratio is " << ratio << std::endl;
+					if (ratio < threshod) continue;
+					cv::Scalar color = cv::Scalar(255, 255, 255);
+					drawContours(output_img, contours, (int)i, color, 1, 8, hierarchy, 0, cv::Point());
+					std::cout << "selected_ratio is " << ratio << std::endl;
+					selected_clusters++;
+				}
+			}
+		}
+		std::cout << "selected_clusters is " << selected_clusters << std::endl;
+		cv::imwrite(output_img_file, output_img);
+
+	}
+
 	void findSkeleton(std::string src_img_file, std::string output_img_file){
 		cv::Mat src = cv::imread(src_img_file, CV_LOAD_IMAGE_UNCHANGED);
 		std::vector<std::vector<cv::Point> > contours;
