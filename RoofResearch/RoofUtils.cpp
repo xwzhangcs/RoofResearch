@@ -469,14 +469,47 @@ namespace roof_utils {
 					std::cout << "ratio is " << ratio << std::endl;
 					if (ratio < threshod) continue;
 					cv::Scalar color = cv::Scalar(255, 255, 255);
-					drawContours(output_img, contours, (int)i, color, 1, 8, hierarchy, 0, cv::Point());
+					drawContours(output_img, contours, (int)i, color, 2, 8, hierarchy, 0, cv::Point());
 					std::cout << "selected_ratio is " << ratio << std::endl;
 					selected_clusters++;
 				}
 			}
 		}
 		std::cout << "selected_clusters is " << selected_clusters << std::endl;
-		cv::imwrite(output_img_file, output_img);
+		// adjust size to fit training
+		int borderType = cv::BORDER_CONSTANT;
+		cv::Scalar value(0, 0, 0);
+		cv::Mat img_padding;
+		int target_width = 224;
+		int target_height = 224;
+		int target_width_ratio = std::ceil(output_img.size().width * 1.0 / target_width);
+		int target_height_ratio = std::ceil(output_img.size().height * 1.0 / target_height);
+		std::cout << "target_width_ratio is " << target_width_ratio << std::endl;
+		std::cout << "target_height_ratio is " << target_height_ratio << std::endl;
+		int left_padding =(target_width_ratio * target_width - output_img.size().width) * 0.5;
+		int right_padding = target_width_ratio * target_width - output_img.size().width - left_padding;
+		int top_padding = (target_height_ratio * target_height - output_img.size().height) * 0.5;
+		int bottom_padding = target_height_ratio * target_height - output_img.size().height - top_padding;
+		cv::copyMakeBorder(output_img, img_padding, top_padding, bottom_padding, left_padding, right_padding, borderType, value);
+		std::cout << "img_padding size is " << img_padding.size() << std::endl;
+		cv::resize(img_padding, img_padding, cv::Size(target_width, target_height));
+		// correct the color
+		for (int i = 0; i < img_padding.size().height; i++) {
+			for (int j = 0; j < img_padding.size().width; j++) {
+				//noise
+				if (img_padding.at<cv::Vec3b>(i, j)[0] > 128 && img_padding.at<cv::Vec3b>(i, j)[1] > 128 && img_padding.at<cv::Vec3b>(i, j)[2] > 128) {
+					img_padding.at<cv::Vec3b>(i, j)[0] = 255;
+					img_padding.at<cv::Vec3b>(i, j)[1] = 255;
+					img_padding.at<cv::Vec3b>(i, j)[2] = 255;
+				}
+				else{
+					img_padding.at<cv::Vec3b>(i, j)[0] = 0;
+					img_padding.at<cv::Vec3b>(i, j)[1] = 0;
+					img_padding.at<cv::Vec3b>(i, j)[2] = 0;
+				}
+			}
+		}
+		cv::imwrite(output_img_file, img_padding);
 
 	}
 

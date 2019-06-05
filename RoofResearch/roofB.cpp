@@ -106,20 +106,25 @@ cv::Mat RoofB::generateRoof(int width, int height, int roofWidth, double roofAsp
 	return result;
 }
 
-void RoofB::generateRoofImages(std::string roofImagesPath, int imageNum, int width, int height, std::pair<int, int> roofWidth, std::pair<double, double> roofAspect, std::pair<double, double> t_width_ratio, std::pair<double, double> t_aspect, std::pair<double, double> t_displacement, int selected_roof_type, std::pair<double, double> ridgeRatio, std::pair<double, double> t_ridgeRatio, const cv::Scalar& bg_color, const cv::Scalar& fg_color){
+int RoofB::generateRoofImages(std::string roofImagesPath, int imageNum, int start_index, int type, int width, int height, std::pair<int, int> roofWidth, std::pair<double, double> roofAspect, std::pair<double, double> t_width_ratio, std::pair<double, double> t_aspect, std::pair<double, double> t_displacement, int selected_roof_type, std::pair<double, double> ridgeRatio, std::pair<double, double> t_ridgeRatio, const cv::Scalar& bg_color, const cv::Scalar& fg_color){
 	std::ofstream out_param(roofImagesPath + "/parameters.txt", std::ios::app);
-	int index = 0;
+	int index = start_index;
 	for (int l = 0; l < imageNum; l++){
 		cv::Mat result(height, width, CV_8UC3, bg_color);
 		int imageRoofWidth = utils::genRand(roofWidth.first, roofWidth.second + 1);
 		double imageRoofAspect = utils::genRand(roofAspect.first, roofAspect.second);
 		double imageTRoofRatio = utils::genRand(t_width_ratio.first, t_width_ratio.second);
 		double imageTRoofAspect = utils::genRand(t_aspect.first, t_aspect.second);
+		double imageTdisplacement = utils::genRand(t_displacement.first, t_displacement.second);
 		int imageRoofHeight = imageRoofWidth * imageRoofAspect;
 		int imageTRoofWidth = imageRoofWidth * imageTRoofRatio;
 		int imageTRoofHeight = imageTRoofWidth * imageTRoofAspect;
 		if (imageRoofHeight + imageTRoofHeight > 0.5 * (height + imageRoofHeight))
 			continue;
+		if (imageTRoofRatio + imageTdisplacement > 1.0){
+			std::cout << "t_width_ratio + t_displacement is bigger than 1.0" << std::endl;
+			imageTdisplacement = 1.0 - imageTRoofRatio;
+		}
 		int thickness = 2;
 		if (selected_roof_type == RoofTypes::FLAT){
 			int upper_left_w = (width - imageRoofWidth) * 0.5;
@@ -128,7 +133,7 @@ void RoofB::generateRoofImages(std::string roofImagesPath, int imageNum, int wid
 			int bottom_right_h = upper_left_h + imageRoofHeight;
 			cv::rectangle(result, cv::Point(upper_left_w, upper_left_h), cv::Point(bottom_right_w, bottom_right_h), fg_color, thickness);
 			// add L part
-			int t_upper_left_w = upper_left_w + imageRoofWidth * utils::genRand(t_displacement.first, t_displacement.second);
+			int t_upper_left_w = upper_left_w + imageRoofWidth * imageTdisplacement;
 			int t_upper_left_h = bottom_right_h;
 			int t_bottom_right_w = t_upper_left_w + imageTRoofWidth;
 			int t_bottom_right_h = t_upper_left_h + imageTRoofHeight;
@@ -145,7 +150,7 @@ void RoofB::generateRoofImages(std::string roofImagesPath, int imageNum, int wid
 			// add ridge
 			cv::line(result, cv::Point(upper_left_w, height / 2), cv::Point(bottom_right_w, height / 2), fg_color, thickness);
 			// add L part
-			int t_upper_left_w = upper_left_w + imageRoofWidth * utils::genRand(t_displacement.first, t_displacement.second);
+			int t_upper_left_w = upper_left_w + imageRoofWidth * imageTdisplacement;
 			int t_upper_left_h = bottom_right_h;
 			int t_bottom_right_w = t_upper_left_w + imageTRoofWidth;
 			int t_bottom_right_h = t_upper_left_h + imageTRoofHeight;
@@ -181,7 +186,7 @@ void RoofB::generateRoofImages(std::string roofImagesPath, int imageNum, int wid
 			cv::line(result, cv::Point(bottom_right_w, upper_left_h), cv::Point(ridge_right_w, ridge_right_h), fg_color, thickness);
 			cv::line(result, cv::Point(bottom_right_w, bottom_right_h), cv::Point(ridge_right_w, ridge_right_h), fg_color, thickness);
 			// add L part
-			int t_upper_left_w = upper_left_w + imageRoofWidth * utils::genRand(t_displacement.first, t_displacement.second);
+			int t_upper_left_w = upper_left_w + imageRoofWidth * imageTdisplacement;
 			int t_upper_left_h = bottom_right_h;
 			int t_bottom_right_w = t_upper_left_w + imageTRoofWidth;
 			int t_bottom_right_h = t_upper_left_h + imageTRoofHeight;
@@ -204,9 +209,16 @@ void RoofB::generateRoofImages(std::string roofImagesPath, int imageNum, int wid
 		}
 
 		char buffer[50];
-		sprintf(buffer, "/roofB_image_%06d.png", index);
-		std::string img_filename = roofImagesPath + std::string(buffer);
+		sprintf(buffer, "roof_image_%06d.png", index);
+		std::string img_filename = roofImagesPath + "/" + std::string(buffer);
 		cv::imwrite(img_filename, result);
+		{
+			out_param << std::string(buffer);
+			out_param << ",";
+			out_param << type;
+			out_param << "\n";
+		}
 		index++;
 	}
+	return index;
 }

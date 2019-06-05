@@ -52,9 +52,9 @@ cv::Mat RoofA::generateRoof(int width, int height, int roofWidth, double roofAsp
 	return result;
 }
 
-void RoofA::generateRoofImages(std::string roofImagesPath, int imageNum, int width, int height, std::pair<int, int> roofWidth, std::pair<double, double> roofAspect, int selected_roof_type, std::pair<double, double> ridgeRatio, const cv::Scalar& bg_color, const cv::Scalar& fg_color){
+int RoofA::generateRoofImages(std::string roofImagesPath, int imageNum, int start_index, int type, int width, int height, std::pair<int, int> roofWidth, std::pair<double, double> roofAspect, int selected_roof_type, std::pair<double, double> ridgeRatio, const cv::Scalar& bg_color, const cv::Scalar& fg_color){
 	std::ofstream out_param(roofImagesPath + "/parameters.txt", std::ios::app);
-	int index = 0;
+	int index = start_index;
 	for (int l = 0; l < imageNum; l++){
 		cv::Mat result(height, width, CV_8UC3, bg_color);
 		int imageRoofWidth = utils::genRand(roofWidth.first, roofWidth.second + 1);
@@ -101,9 +101,16 @@ void RoofA::generateRoofImages(std::string roofImagesPath, int imageNum, int wid
 			// do nothing
 		}
 		char buffer[50];
-		sprintf(buffer, "/roofA_image_%06d.png", index);
-		std::string img_filename = roofImagesPath + std::string(buffer);
+		sprintf(buffer, "roof_image_%06d.png", index);
+		std::string img_filename = roofImagesPath + "/" + std::string(buffer);
 		cv::imwrite(img_filename, result);
+		{
+			out_param << std::string(buffer);
+			out_param << ",";
+			out_param << type;
+			out_param << "\n";
+		}
 		index++;
 	}
+	return index;
 }

@@ -11,6 +11,6 @@ protected:
 
 public:
 	static cv::Mat generateRoof(int width, int height, int roofWidth, double roofAspect, int selected_roof_type, double ridgeRatio, const cv::Scalar& bg_color, const cv::Scalar& fg_color);
-	static void generateRoofImages(std::string roofImagesPath, int imageNum, int width, int height, std::pair<int, int> roofWidth, std::pair<double, double> roofAspect, int selected_roof_type, std::pair<double, double> ridgeRatio, const cv::Scalar& bg_color, const cv::Scalar& fg_color);
+	static int generateRoofImages(std::string roofImagesPath, int imageNum, int start_index, int type, int width, int height, std::pair<int, int> roofWidth, std::pair<double, double> roofAspect, int selected_roof_type, std::pair<double, double> ridgeRatio, const cv::Scalar& bg_color, const cv::Scalar& fg_color);
 
 };
