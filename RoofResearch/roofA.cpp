@@ -106,8 +106,14 @@ int RoofA::generateRoofImages(std::string roofImagesPath, int imageNum, int star
 		cv::imwrite(img_filename, result);
 		{
 			out_param << std::string(buffer);
-			out_param << ",";
-			out_param << type;
+			for (int cluster = 0; cluster < 8; cluster++){
+				out_param << ",";
+				if (cluster == type){
+					out_param << 1;
+				}
+				else
+					out_param << 0;
+			}
 			out_param << "\n";
 		}
 		index++;

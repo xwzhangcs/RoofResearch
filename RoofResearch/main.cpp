@@ -69,7 +69,7 @@ int main(int argc, char** argv)
 	start_index = RoofC::generateRoofImages("../data/val", 4000, start_index, 7, 224, 224, std::make_pair(10, 50), std::make_pair(50, 100), std::make_pair(0.3, 0.7), std::make_pair(60, 100), std::make_pair(0.5, 0.8), std::make_pair(30, 50), RoofTypes::GABLE, std::make_pair(0.5, 0.8), std::make_pair(0.5, 0.8), cv::Scalar(0, 0, 0), cv::Scalar(255, 255, 255));
 
 	// test
-	start_index = 0;
+	//start_index = 0;
 	start_index = RoofA::generateRoofImages("../data/test", 100, start_index, 0, 224, 224, std::make_pair(80, 200), std::make_pair(0.3, 0.7), RoofTypes::FLAT, std::make_pair(0.5, 0.8), cv::Scalar(0, 0, 0), cv::Scalar(255, 255, 255));
 	start_index = RoofA::generateRoofImages("../data/test", 100, start_index, 1, 224, 224, std::make_pair(80, 200), std::make_pair(0.3, 0.7), RoofTypes::GABLE, std::make_pair(0.5, 0.8), cv::Scalar(0, 0, 0), cv::Scalar(255, 255, 255));
 	start_index = RoofA::generateRoofImages("../data/test", 100, start_index, 2, 224, 224, std::make_pair(80, 200), std::make_pair(0.3, 0.7), RoofTypes::HIP, std::make_pair(0.5, 0.8), cv::Scalar(0, 0, 0), cv::Scalar(255, 255, 255));
