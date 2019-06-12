@@ -12,6 +12,13 @@
 
 int main(int argc, char** argv)
 {
+	roof_utils::generate_from_mask("../data/roof_data/D2");
+	roof_utils::generate_from_mask("../data/roof_data/D4");
+	roof_utils::generate_from_mask("../data/roof_data/D7");
+	roof_utils::generate_from_mask("../data/roof_data/D8");
+	roof_utils::generate_from_mask("../data/roof_data/D9");
+	system("pause");
+	return 0;
 	/*cv::Mat result = RoofB::generateRoof(224, 224, 100, 0.5, 0.4, 1.2, 0.3, RoofTypes::FLAT, 0, 0.0, cv::Scalar(0, 0, 0), cv::Scalar(255, 255, 255));
 	cv::imwrite("../data/roofB_flat_test.png", result);
 	result = RoofB::generateRoof(224, 224, 100, 0.5, 0.4, 1.2, 0.6, RoofTypes::GABLE, 0, 0.0, cv::Scalar(0, 0, 0), cv::Scalar(255, 255, 255));

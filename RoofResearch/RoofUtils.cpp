@@ -350,12 +350,15 @@ namespace roof_utils {
 			std::string bld_pan_img = path + "/" + sub_folder + "/building_cluster_" + sub_folder + "__OrthoPAN.png";
 			std::string bld_rgb_tif = path + "/" + sub_folder + "/building_cluster_" + sub_folder + "__OrthoRGB.tif";
 			std::string bld_rgb_img = path + "/" + sub_folder + "/building_cluster_" + sub_folder + "__OrthoRGB.png";
-			crop_img_from_mask(bld_pan_tif.c_str(), type_info, bld_pan_img);
-			crop_img_from_mask(bld_rgb_tif.c_str(), type_info, bld_rgb_img);
-			std::string skeleton_mask_img = path + "/" + sub_folder + "/building_cluster_" + sub_folder + "__Skeleton_mask.png";
+			std::string bld_edge_tif = path + "/" + sub_folder + "/building_cluster_" + sub_folder + "__PanEdges.tif";
+			std::string bld_edge_img = path + "/" + sub_folder + "/building_cluster_" + sub_folder + "__PanEdges.png";
+			//crop_img_from_mask(bld_pan_tif.c_str(), type_info, bld_pan_img);
+			//crop_img_from_mask(bld_rgb_tif.c_str(), type_info, bld_rgb_img);
+			crop_img_from_mask(bld_edge_tif.c_str(), type_info, bld_edge_img);
+			/*std::string skeleton_mask_img = path + "/" + sub_folder + "/building_cluster_" + sub_folder + "__Skeleton_mask.png";
 			findSkeleton(bld_mask_img, skeleton_mask_img);
 			std::string skeleton_rgb_img = path + "/" + sub_folder + "/building_cluster_" + sub_folder + "__Skeleton.png";
-			findSkeleton(bld_mask_img, bld_rgb_img, skeleton_rgb_img);
+			findSkeleton(bld_mask_img, bld_rgb_img, skeleton_rgb_img);*/
 		}
 	}
 
@@ -957,18 +960,18 @@ namespace roof_utils {
 				//Reading Raster Data
 				int nXSize = poBand->GetXSize();
 				int nYSize = poBand->GetYSize();
-				int *pafScanline = new int[nXSize*nYSize];
+				float *pafScanline = new float[nXSize*nYSize];
 				printf("Band nXSize is %d.\n", nXSize);
 				printf("Band nYSize is %d.\n", nYSize);
-				pafScanline = (int *)CPLMalloc(sizeof(int)*nXSize*nYSize);
+				pafScanline = (float *)CPLMalloc(sizeof(float)*nXSize*nYSize);
 				poBand->RasterIO(GF_Read, 0, 0, nXSize, nYSize,
-					pafScanline, nXSize, nYSize, GDT_Int32,
+					pafScanline, nXSize, nYSize, GDT_Float32,
 					0, 0);
 				for (int i = 0; i < nYSize; i++){
 					for (int j = 0; j < nXSize; j++){
 						if (type_info[i][j] == 1)
 							if (poDataset_height->GetRasterCount() == 1)
-								output_img.at<uchar>(i, j) = (uchar)pafScanline[j + nXSize*i];
+								output_img.at<uchar>(i, j) = (uchar)(pafScanline[j + nXSize*i] * 255);
 							else
 								output_img.at<cv::Vec3b>(i, j)[layer - 1] = pafScanline[j + nXSize*i];
 					}
