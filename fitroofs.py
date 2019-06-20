@@ -10,6 +10,7 @@ from scipy.ndimage import rotate
 import glob
 import cv2
 
+
 def rectangle_generator():
 	D = []
 	FD = []
@@ -17,17 +18,25 @@ def rectangle_generator():
 	lengths = np.arange(2, 105, 2)
 	for width in lengths:
 		for height in lengths:
-			if width / height <= max_aspect and height / width <= max_aspect:
-				g = np.zeros((128, 128), np.float)
-				g = cv2.rectangle(g, (64 - int(width / 2), 64 - int(height / 2)),
-								  (64 + int(width / 2), 64 + int(height / 2)), (1.0), -1)
-				g /= np.sqrt(np.sum(g * g))
-				Fg = np.fft.fftn(g)
-				Fg = np.conj(Fg)
-				D.append(g)
-				FD.append(Fg)
+			for choice in range(2):
+				if width / height <= max_aspect and height / width <= max_aspect:
+					g = np.zeros((128, 128), np.float)
+					g = cv2.rectangle(g, (64 - int(width / 2), 64 - int(height / 2)),
+								  (64 + int(width / 2), 64 + int(height / 2)), (1.0), 1)
+					if choice == 0:
+						g = cv2.rectangle(g, (64 - int(width / 2), 64),
+								  (64 + int(width / 2), 64), (1.0), 1)
+					else:
+						g = cv2.rectangle(g, (64, 64 - int(height / 2)),
+										  (64, 64 + int(height / 2)), (1.0), 1)
+					g /= np.sqrt(np.sum(g * g))
+					Fg = np.fft.fftn(g)
+					Fg = np.conj(Fg)
+					D.append(g)
+					FD.append(Fg)
 	return D, FD
 
+'''
 def l_generator():
 	# define L shape generators
 	D = []
@@ -158,6 +167,7 @@ def u_whole_generator():
 							D.append(g)
 							FD.append(Fg)
 	return D, FD
+'''
 
 def main(input_filename, output_filename, num_iterations):
 	# load image
@@ -182,9 +192,7 @@ def main(input_filename, output_filename, num_iterations):
 	shape_1, shape_2 = rectangle_generator()
 	D.extend(shape_1)
 	FD.extend(shape_2)
-	shape_1, shape_2 = t_generator()
-	D.extend(shape_1)
-	FD.extend(shape_2)
+
 
 	FD = np.array(FD)
 	
@@ -195,7 +203,7 @@ def main(input_filename, output_filename, num_iterations):
 	A = None
 	coeff = None
 	for iter in range(num_iterations):
-		residual[residual <= 0] = -10
+		residual[residual <= 0] = 0
 		
 		# calculate coefficient
 		FY = np.fft.fftn(residual)

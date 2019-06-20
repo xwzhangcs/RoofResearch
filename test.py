@@ -9,12 +9,11 @@ from scipy import misc
 from scipy.ndimage import rotate
 import glob
 import cv2
-Y = misc.imread('data/building_cluster_0093__OrthoPAN_oriented.png')
-if Y.ndim == 3:
-    Y = np.mean(Y[:, :, 0:2], axis=-1)
-tmp = np.array(Y.flat)
-a = np.delete(tmp, np.where(tmp <= 5))
-print(Y.shape)
-print(a.shape)
-print(Y[0][0])
+g = np.zeros((128, 128), np.float)
+g = cv2.rectangle(g, (64 - int(80 / 2), 64 - int(60 / 2)),
+								  (64 + int(80 / 2), 64 + int(60 / 2)), (1.0), 1)
+g = cv2.line(g, (64 - int(80 / 2), 64),
+								  (64 + int(80 / 2), 64), (1.0), 1)
+misc.imsave('data/test.png', (g * 255).astype(np.uint8))
+
 

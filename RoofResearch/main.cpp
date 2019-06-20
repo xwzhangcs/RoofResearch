@@ -12,11 +12,21 @@
 
 int main(int argc, char** argv)
 {
-	roof_utils::generate_from_mask("../data/roof_data/D2");
-	roof_utils::generate_from_mask("../data/roof_data/D4");
-	roof_utils::generate_from_mask("../data/roof_data/D7");
-	roof_utils::generate_from_mask("../data/roof_data/D8");
-	roof_utils::generate_from_mask("../data/roof_data/D9");
+	cv::Mat src = cv::imread("../data/building_cluster_0336__PanEdges_v1.png", CV_LOAD_IMAGE_UNCHANGED);
+	double angle = 3;
+
+	// get rotation matrix for rotating the image around its center in pixel coordinates
+	cv::Point2f center((src.cols - 1) / 2.0, (src.rows - 1) / 2.0);
+	cv::Mat rot = cv::getRotationMatrix2D(center, angle, 1.0);
+	// determine bounding rectangle, center not relevant
+	cv::Rect2f bbox = cv::RotatedRect(cv::Point2f(), src.size(), angle).boundingRect2f();
+	// adjust transformation matrix
+	rot.at<double>(0, 2) += bbox.width / 2.0 - src.cols / 2.0;
+	rot.at<double>(1, 2) += bbox.height / 2.0 - src.rows / 2.0;
+
+	cv::Mat dst;
+	cv::warpAffine(src, dst, rot, bbox.size());
+	cv::imwrite("../data/building_cluster_0336__PanEdges_rotated.png", dst);
 	system("pause");
 	return 0;
 	/*cv::Mat result = RoofB::generateRoof(224, 224, 100, 0.5, 0.4, 1.2, 0.3, RoofTypes::FLAT, 0, 0.0, cv::Scalar(0, 0, 0), cv::Scalar(255, 255, 255));
