@@ -22,13 +22,7 @@ def rectangle_generator():
 				if width / height <= max_aspect and height / width <= max_aspect:
 					g = np.zeros((128, 128), np.float)
 					g = cv2.rectangle(g, (64 - int(width / 2), 64 - int(height / 2)),
-								  (64 + int(width / 2), 64 + int(height / 2)), (1.0), 1)
-					if choice == 0:
-						g = cv2.line(g, (64 - int(width / 2), 64),
-								  (64 + int(width / 2), 64), (1.0), 1)
-					else:
-						g = cv2.line(g, (64, 64 - int(height / 2)),
-										  (64, 64 + int(height / 2)), (1.0), 1)
+								  (64 + int(width / 2), 64 + int(height / 2)), (1.0), -1)
 					g /= np.sqrt(np.sum(g * g))
 					Fg = np.fft.fftn(g)
 					Fg = np.conj(Fg)
@@ -203,7 +197,7 @@ def main(input_filename, output_filename, num_iterations):
 	A = None
 	coeff = None
 	for iter in range(num_iterations):
-		residual[residual <= 0] = -1
+		residual[residual <= 0] = -10
 		
 		# calculate coefficient
 		FY = np.fft.fftn(residual)
@@ -243,8 +237,8 @@ def main(input_filename, output_filename, num_iterations):
 		misc.imsave('results/result_' + str(iter) + '.png', (Y2 * 255).astype(np.uint8))
 		
 		# update residual
-		#residual = Y - Y2
-		#residual[residual < 0] = 0
+		residual = Y - Y2
+		residual[residual < 0] = 0
 		misc.imsave('results/residual_' + str(iter) + '.png', (residual * 255).astype(np.uint8))
 		
 		# check stoppping criteria
@@ -253,7 +247,7 @@ def main(input_filename, output_filename, num_iterations):
 		
 		print('iter:', iter, 'index:', (i, tx, ty), 'err:', err/norm_Y, sep='\t')
 
-		#if err < rtol * norm_Y: break
+		if err < rtol * norm_Y: break
 
 	# generate result image
 	result = Y2
