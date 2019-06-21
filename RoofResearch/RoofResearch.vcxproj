@@ -98,6 +98,9 @@
       <GenerateDebugInformation>true</GenerateDebugInformation>
       <EnableCOMDATFolding>true</EnableCOMDATFolding>
       <OptimizeReferences>true</OptimizeReferences>
+      <OutputFile>$(BOOST_INCLUDEDIR);C:\CGAL-4.11.1\include;C:\CGAL-4.11.1\auxiliary\gmp\include;..\opencv3.4\include;..\include;..\gdal\include;$(DLIB)</OutputFile>
+      <AdditionalLibraryDirectories>C:\CGAL-4.11.1\lib;C:\CGAL-4.11.1\auxiliary\gmp\lib;$(BOOST_LIBRARYDIR);../opencv3.4/lib;../gdal/lib</AdditionalLibraryDirectories>
+      <AdditionalDependencies>gdal_i.lib;opencv_core342.lib;opencv_highgui342.lib;opencv_imgcodecs342.lib;opencv_imgproc342.lib;CGAL_Core-vc120-mt-4.11.1.lib;CGAL_ImageIO-vc120-mt-4.11.1.lib;CGAL-vc120-mt-4.11.1.lib;libgmp-10.lib;libmpfr-4.lib;libboost_thread-vc120-mt-1_58.lib;%(AdditionalDependencies)</AdditionalDependencies>
     </Link>
   </ItemDefinitionGroup>
   <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='Release|x64'">

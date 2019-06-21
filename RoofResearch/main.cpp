@@ -12,8 +12,8 @@
 
 int main(int argc, char** argv)
 {
-	cv::Mat src = cv::imread("../data/building_cluster_0336__PanEdges_v1.png", CV_LOAD_IMAGE_UNCHANGED);
-	double angle = 3;
+	cv::Mat src = cv::imread("../data/0112_edge.png", CV_LOAD_IMAGE_UNCHANGED);
+	double angle = -2;
 
 	// get rotation matrix for rotating the image around its center in pixel coordinates
 	cv::Point2f center((src.cols - 1) / 2.0, (src.rows - 1) / 2.0);
@@ -26,7 +26,7 @@ int main(int argc, char** argv)
 
 	cv::Mat dst;
 	cv::warpAffine(src, dst, rot, bbox.size());
-	cv::imwrite("../data/building_cluster_0336__PanEdges_rotated.png", dst);
+	cv::imwrite("../data/0112_edge_rotated.png", dst);
 	system("pause");
 	return 0;
 	/*cv::Mat result = RoofB::generateRoof(224, 224, 100, 0.5, 0.4, 1.2, 0.3, RoofTypes::FLAT, 0, 0.0, cv::Scalar(0, 0, 0), cv::Scalar(255, 255, 255));

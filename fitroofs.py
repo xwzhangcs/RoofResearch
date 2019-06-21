@@ -179,9 +179,9 @@ def main(input_filename, output_filename, num_iterations):
 
 	# resize to 128 x 128
 	Y = misc.imresize(Y, (128, 128)) / 255
-	Y[Y < 0.6] = 0
-	Y[Y >= 0.6] = 1.0
-	# misc.imsave('data/resize_0112.png', (Y * 255).astype(np.uint8))
+	Y[Y < 0.4] = 0
+	Y[Y >= 0.4] = 1.0
+	misc.imsave('data/resize_0112.png', (Y * 255).astype(np.uint8))
 	#norm_Y = np.sqrt(np.inner(Y.flat, Y.flat))
 	norm_Y = np.sum(Y)
 
