@@ -10,110 +10,115 @@
 #include "roofF.h"
 #include "RoofUtils.h"
 
+std::vector<int> adjust_chip(cv::Mat chip);
+
 int main(int argc, char** argv)
 {
-	cv::Mat src = cv::imread("../data/0112_edge.png", CV_LOAD_IMAGE_UNCHANGED);
-	double angle = -2;
-
-	// get rotation matrix for rotating the image around its center in pixel coordinates
-	cv::Point2f center((src.cols - 1) / 2.0, (src.rows - 1) / 2.0);
-	cv::Mat rot = cv::getRotationMatrix2D(center, angle, 1.0);
-	// determine bounding rectangle, center not relevant
-	cv::Rect2f bbox = cv::RotatedRect(cv::Point2f(), src.size(), angle).boundingRect2f();
-	// adjust transformation matrix
-	rot.at<double>(0, 2) += bbox.width / 2.0 - src.cols / 2.0;
-	rot.at<double>(1, 2) += bbox.height / 2.0 - src.rows / 2.0;
-
-	cv::Mat dst;
-	cv::warpAffine(src, dst, rot, bbox.size());
-	cv::imwrite("../data/0112_edge_rotated.png", dst);
+	cv::Mat src = cv::imread("../data/rotate.png", CV_LOAD_IMAGE_UNCHANGED);
+	//cv::Mat dst;
+	//cv::Point2f pt(src.cols / 2., src.rows / 2.);
+	//cv::Mat r = cv::getRotationMatrix2D(pt, 15, 1.0);
+	//warpAffine(src, dst, r, cv::Size(src.cols, src.rows));
+	//cv::imwrite("../data/rotate.png", dst);
+	std::vector<int> boundaries = adjust_chip(src);
+	cv::Mat adjust_img = src(cv::Rect(boundaries[2], boundaries[0], boundaries[3] - boundaries[2] + 1, boundaries[1] - boundaries[0] + 1));
+	// resize to 200 by 200
+	cv::resize(adjust_img, adjust_img, cv::Size(200, 200));
+	// add padding
+	int padding_size = 12;
+	int borderType = cv::BORDER_CONSTANT;
+	cv::Mat img_padding;
+	cv::copyMakeBorder(adjust_img, img_padding, padding_size, padding_size, padding_size, padding_size, borderType, cv::Scalar(0, 0, 0));
+	cv::imwrite("../data/resize.png", img_padding);
 	system("pause");
 	return 0;
-	/*cv::Mat result = RoofB::generateRoof(224, 224, 100, 0.5, 0.4, 1.2, 0.3, RoofTypes::FLAT, 0, 0.0, cv::Scalar(0, 0, 0), cv::Scalar(255, 255, 255));
-	cv::imwrite("../data/roofB_flat_test.png", result);
-	result = RoofB::generateRoof(224, 224, 100, 0.5, 0.4, 1.2, 0.6, RoofTypes::GABLE, 0, 0.0, cv::Scalar(0, 0, 0), cv::Scalar(255, 255, 255));
-	cv::imwrite("../data/roofB_gable_test.png", result);
-	result = RoofB::generateRoof(224, 224, 100, 0.5, 0.4, 1.2, 0.3, RoofTypes::HIP, 0.6, 0.7, cv::Scalar(0, 0, 0), cv::Scalar(255, 255, 255));
-	cv::imwrite("../data/roofB_hip_test.png", result);
-	RoofB::generateRoofImages("../data", 5, 224, 224, std::make_pair(100, 200), std::make_pair(0.3, 0.7), std::make_pair(0.3, 0.5), std::make_pair(0.8, 1.3), std::make_pair(0.3, 0.4), RoofTypes::HIP, std::make_pair(0.5, 0.8), std::make_pair(0.5, 0.8), cv::Scalar(0, 0, 0), cv::Scalar(255, 255, 255));*/
-	
-	/*cv::Mat result = RoofC::generateRoof(224, 224, 10, 100, 0.5, 100, 0.5, -30, RoofTypes::FLAT, 0, 0.0, cv::Scalar(0, 0, 0), cv::Scalar(255, 255, 255));
-	cv::imwrite("../data/roofC_flat_test.png", result);
-	result = RoofC::generateRoof(224, 224, 10, 100, 0.5, 100, 0.5, -30, RoofTypes::GABLE, 0, 0.0, cv::Scalar(0, 0, 0), cv::Scalar(255, 255, 255));
-	cv::imwrite("../data/roofC_gable_test.png", result);
-	result = RoofC::generateRoof(224, 224, 10, 100, 0.5, 100, 0.5, -30, RoofTypes::HIP, 0.7, 0.7, cv::Scalar(0, 0, 0), cv::Scalar(255, 255, 255));
-	cv::imwrite("../data/roofC_hip_test.png", result);
-	RoofC::generateRoofImages("../data", 2, 224, 224, 10, std::make_pair(80, 100), std::make_pair(0.3, 0.7), std::make_pair(80, 100), std::make_pair(0.3, 0.5), std::make_pair(-35, -25), RoofTypes::GABLE, std::make_pair(0.5, 0.8), std::make_pair(0.5, 0.8), cv::Scalar(0, 0, 0), cv::Scalar(255, 255, 255));
-	system("pause");*/
-	/*cv::Mat result = RoofD::generateRoof(224, 224, 100, 0.4, 0.4, 2.0, RoofTypes::FLAT, 0, 0.0, cv::Scalar(0, 0, 0), cv::Scalar(255, 255, 255));
-	cv::imwrite("../data/roofD_flat_test.png", result);
-	result = RoofD::generateRoof(224, 224, 100, 0.4, 0.4, 2.0, RoofTypes::GABLE, 0, 0.0, cv::Scalar(0, 0, 0), cv::Scalar(255, 255, 255));
-	cv::imwrite("../data/roofD_gable_test.png", result);*/
+}
 
-	/*cv::Mat result = RoofE::generateRoof(224, 224, 100, 0.4, 0.4, 2.0, 0.3, RoofTypes::FLAT, 0, 0.0, cv::Scalar(0, 0, 0), cv::Scalar(255, 255, 255));
-	cv::imwrite("../data/roofE_flat_test.png", result);
-	result = RoofE::generateRoof(224, 224, 100, 0.4, 0.4, 2.0, 0.3, RoofTypes::GABLE, 0, 0.0, cv::Scalar(0, 0, 0), cv::Scalar(255, 255, 255));
-	cv::imwrite("../data/roofE_gable_test.png", result);
-	result = RoofE::generateRoof(224, 224, 100, 0.4, 0.4, 2.0, 0.0, RoofTypes::HIP, 0.6, 0.6, cv::Scalar(0, 0, 0), cv::Scalar(255, 255, 255));
-	cv::imwrite("../data/roofE_hip_test.png", result);*/
-	/*cv::Mat result = RoofF::generateRoof(224, 224, 100, 0.3, 0.4, 3.0, RoofTypes::FLAT, 0, 0.0, cv::Scalar(0, 0, 0), cv::Scalar(255, 255, 255));
-	cv::imwrite("../data/roofF_flat_test.png", result);
-	result = RoofF::generateRoof(224, 224, 100, 0.3, 0.4, 3.0, RoofTypes::GABLE, 0, 0.0, cv::Scalar(0, 0, 0), cv::Scalar(255, 255, 255));
-	cv::imwrite("../data/roofF_gable_test.png", result);
-	result = RoofF::generateRoof(224, 224, 100, 0.3, 0.4, 3.0, RoofTypes::HIP, 0.6, 0.7, cv::Scalar(0, 0, 0), cv::Scalar(255, 255, 255));
-	cv::imwrite("../data/roofF_hip_test.png", result);*/
-	
-	// generate training images
-	int start_index = 0;
-	start_index = RoofA::generateRoofImages("../data/train", 20000, start_index, 0, 224, 224, std::make_pair(80, 200), std::make_pair(0.3, 0.7), RoofTypes::FLAT, std::make_pair(0.5, 0.8), cv::Scalar(0, 0, 0), cv::Scalar(255, 255, 255));
-	start_index = RoofA::generateRoofImages("../data/train", 20000, start_index, 1, 224, 224, std::make_pair(80, 200), std::make_pair(0.3, 0.7), RoofTypes::GABLE, std::make_pair(0.5, 0.8), cv::Scalar(0, 0, 0), cv::Scalar(255, 255, 255));
-	start_index = RoofA::generateRoofImages("../data/train", 20000, start_index, 2, 224, 224, std::make_pair(80, 200), std::make_pair(0.3, 0.7), RoofTypes::HIP, std::make_pair(0.5, 0.8), cv::Scalar(0, 0, 0), cv::Scalar(255, 255, 255));
-	start_index = RoofB::generateRoofImages("../data/train", 20000, start_index, 3, 224, 224, std::make_pair(60, 150), std::make_pair(0.3, 0.7), std::make_pair(0.3, 0.5), std::make_pair(0.8, 1.3), std::make_pair(0.3, 0.7), RoofTypes::FLAT, std::make_pair(0.5, 0.8), std::make_pair(0.5, 0.8), cv::Scalar(0, 0, 0), cv::Scalar(255, 255, 255));
-	start_index = RoofB::generateRoofImages("../data/train", 20000, start_index, 4, 224, 224, std::make_pair(60, 150), std::make_pair(0.3, 0.7), std::make_pair(0.3, 0.5), std::make_pair(0.8, 1.3), std::make_pair(0.3, 0.7), RoofTypes::GABLE, std::make_pair(0.5, 0.8), std::make_pair(0.5, 0.8), cv::Scalar(0, 0, 0), cv::Scalar(255, 255, 255));
-	start_index = RoofB::generateRoofImages("../data/train", 20000, start_index, 5, 224, 224, std::make_pair(60, 150), std::make_pair(0.3, 0.7), std::make_pair(0.3, 0.5), std::make_pair(0.8, 1.3), std::make_pair(0.3, 0.7), RoofTypes::HIP, std::make_pair(0.5, 0.8), std::make_pair(0.5, 0.8), cv::Scalar(0, 0, 0), cv::Scalar(255, 255, 255));
-	start_index = RoofC::generateRoofImages("../data/train", 20000, start_index, 6, 224, 224, std::make_pair(10, 50), std::make_pair(50, 100), std::make_pair(0.3, 0.7), std::make_pair(60, 100), std::make_pair(0.5, 0.8), std::make_pair(30, 50), RoofTypes::FLAT, std::make_pair(0.5, 0.8), std::make_pair(0.5, 0.8), cv::Scalar(0, 0, 0), cv::Scalar(255, 255, 255));
-	start_index = RoofC::generateRoofImages("../data/train", 20000, start_index, 7, 224, 224, std::make_pair(10, 50), std::make_pair(50, 100), std::make_pair(0.3, 0.7), std::make_pair(60, 100), std::make_pair(0.5, 0.8), std::make_pair(30, 50), RoofTypes::GABLE, std::make_pair(0.5, 0.8), std::make_pair(0.5, 0.8), cv::Scalar(0, 0, 0), cv::Scalar(255, 255, 255));
-	
-	// val
-	start_index = 0;
-	start_index = RoofA::generateRoofImages("../data/val", 4000, start_index, 0, 224, 224, std::make_pair(80, 200), std::make_pair(0.3, 0.7), RoofTypes::FLAT, std::make_pair(0.5, 0.8), cv::Scalar(0, 0, 0), cv::Scalar(255, 255, 255));
-	start_index = RoofA::generateRoofImages("../data/val", 4000, start_index, 1, 224, 224, std::make_pair(80, 200), std::make_pair(0.3, 0.7), RoofTypes::GABLE, std::make_pair(0.5, 0.8), cv::Scalar(0, 0, 0), cv::Scalar(255, 255, 255));
-	start_index = RoofA::generateRoofImages("../data/val", 4000, start_index, 2, 224, 224, std::make_pair(80, 200), std::make_pair(0.3, 0.7), RoofTypes::HIP, std::make_pair(0.5, 0.8), cv::Scalar(0, 0, 0), cv::Scalar(255, 255, 255));
-	start_index = RoofB::generateRoofImages("../data/val", 4000, start_index, 3, 224, 224, std::make_pair(60, 150), std::make_pair(0.3, 0.7), std::make_pair(0.3, 0.5), std::make_pair(0.8, 1.3), std::make_pair(0.3, 0.7), RoofTypes::FLAT, std::make_pair(0.5, 0.8), std::make_pair(0.5, 0.8), cv::Scalar(0, 0, 0), cv::Scalar(255, 255, 255));
-	start_index = RoofB::generateRoofImages("../data/val", 4000, start_index, 4, 224, 224, std::make_pair(60, 150), std::make_pair(0.3, 0.7), std::make_pair(0.3, 0.5), std::make_pair(0.8, 1.3), std::make_pair(0.3, 0.7), RoofTypes::GABLE, std::make_pair(0.5, 0.8), std::make_pair(0.5, 0.8), cv::Scalar(0, 0, 0), cv::Scalar(255, 255, 255));
-	start_index = RoofB::generateRoofImages("../data/val", 4000, start_index, 5, 224, 224, std::make_pair(60, 150), std::make_pair(0.3, 0.7), std::make_pair(0.3, 0.5), std::make_pair(0.8, 1.3), std::make_pair(0.3, 0.7), RoofTypes::HIP, std::make_pair(0.5, 0.8), std::make_pair(0.5, 0.8), cv::Scalar(0, 0, 0), cv::Scalar(255, 255, 255));
-	start_index = RoofC::generateRoofImages("../data/val", 4000, start_index, 6, 224, 224, std::make_pair(10, 50), std::make_pair(50, 100), std::make_pair(0.3, 0.7), std::make_pair(60, 100), std::make_pair(0.5, 0.8), std::make_pair(30, 50), RoofTypes::FLAT, std::make_pair(0.5, 0.8), std::make_pair(0.5, 0.8), cv::Scalar(0, 0, 0), cv::Scalar(255, 255, 255));
-	start_index = RoofC::generateRoofImages("../data/val", 4000, start_index, 7, 224, 224, std::make_pair(10, 50), std::make_pair(50, 100), std::make_pair(0.3, 0.7), std::make_pair(60, 100), std::make_pair(0.5, 0.8), std::make_pair(30, 50), RoofTypes::GABLE, std::make_pair(0.5, 0.8), std::make_pair(0.5, 0.8), cv::Scalar(0, 0, 0), cv::Scalar(255, 255, 255));
-
-	// test
-	//start_index = 0;
-	start_index = RoofA::generateRoofImages("../data/test", 100, start_index, 0, 224, 224, std::make_pair(80, 200), std::make_pair(0.3, 0.7), RoofTypes::FLAT, std::make_pair(0.5, 0.8), cv::Scalar(0, 0, 0), cv::Scalar(255, 255, 255));
-	start_index = RoofA::generateRoofImages("../data/test", 100, start_index, 1, 224, 224, std::make_pair(80, 200), std::make_pair(0.3, 0.7), RoofTypes::GABLE, std::make_pair(0.5, 0.8), cv::Scalar(0, 0, 0), cv::Scalar(255, 255, 255));
-	start_index = RoofA::generateRoofImages("../data/test", 100, start_index, 2, 224, 224, std::make_pair(80, 200), std::make_pair(0.3, 0.7), RoofTypes::HIP, std::make_pair(0.5, 0.8), cv::Scalar(0, 0, 0), cv::Scalar(255, 255, 255));
-	start_index = RoofB::generateRoofImages("../data/test", 100, start_index, 3, 224, 224, std::make_pair(60, 150), std::make_pair(0.3, 0.7), std::make_pair(0.3, 0.5), std::make_pair(0.8, 1.3), std::make_pair(0.3, 0.7), RoofTypes::FLAT, std::make_pair(0.5, 0.8), std::make_pair(0.5, 0.8), cv::Scalar(0, 0, 0), cv::Scalar(255, 255, 255));
-	start_index = RoofB::generateRoofImages("../data/test", 100, start_index, 4, 224, 224, std::make_pair(60, 150), std::make_pair(0.3, 0.7), std::make_pair(0.3, 0.5), std::make_pair(0.8, 1.3), std::make_pair(0.3, 0.7), RoofTypes::GABLE, std::make_pair(0.5, 0.8), std::make_pair(0.5, 0.8), cv::Scalar(0, 0, 0), cv::Scalar(255, 255, 255));
-	start_index = RoofB::generateRoofImages("../data/test", 100, start_index, 5, 224, 224, std::make_pair(60, 150), std::make_pair(0.3, 0.7), std::make_pair(0.3, 0.5), std::make_pair(0.8, 1.3), std::make_pair(0.3, 0.7), RoofTypes::HIP, std::make_pair(0.5, 0.8), std::make_pair(0.5, 0.8), cv::Scalar(0, 0, 0), cv::Scalar(255, 255, 255));
-	start_index = RoofC::generateRoofImages("../data/test", 100, start_index, 6, 224, 224, std::make_pair(10, 50), std::make_pair(50, 100), std::make_pair(0.3, 0.7), std::make_pair(60, 100), std::make_pair(0.5, 0.8), std::make_pair(30, 50), RoofTypes::FLAT, std::make_pair(0.5, 0.8), std::make_pair(0.5, 0.8), cv::Scalar(0, 0, 0), cv::Scalar(255, 255, 255));
-	start_index = RoofC::generateRoofImages("../data/test", 100, start_index, 7, 224, 224, std::make_pair(10, 50), std::make_pair(50, 100), std::make_pair(0.3, 0.7), std::make_pair(60, 100), std::make_pair(0.5, 0.8), std::make_pair(30, 50), RoofTypes::GABLE, std::make_pair(0.5, 0.8), std::make_pair(0.5, 0.8), cv::Scalar(0, 0, 0), cv::Scalar(255, 255, 255));
-
-	system("pause");
-	
-	return 0;
-	// generate input images
-	{
-		std::string src_img_file = "../data/building_cluster_0214__hist_seg.png";
-		std::vector<cv::Scalar> colorList;
-		colorList.push_back(cv::Scalar(139, 0, 0));
-		colorList.push_back(cv::Scalar(255, 0, 0));
-		colorList.push_back(cv::Scalar(255, 255, 0));
-		colorList.push_back(cv::Scalar(0, 100, 0));
-		colorList.push_back(cv::Scalar(0, 255, 0));
-		colorList.push_back(cv::Scalar(0, 0, 139));
-		colorList.push_back(cv::Scalar(0, 0, 255));
-		colorList.push_back(cv::Scalar(0, 255, 255));
-		std::string output_img_file = "../data/building_cluster_0214__edge_map.png";
-		roof_utils::findContours_from_colorList(src_img_file, colorList, output_img_file);
+std::vector<int> adjust_chip(cv::Mat chip) {
+	std::vector<int> boundaries;
+	boundaries.resize(4); // top, bottom, left and right
+	if (chip.channels() != 1) {
+		boundaries[0] = 0;
+		boundaries[1] = chip.size().height - 1;
+		boundaries[2] = 0;
+		boundaries[3] = chip.size().width - 1;
+		return boundaries;
 	}
-	system("pause");
-	return 0;
+	// find the boundary
+	double thre_upper = 1.1; // don't apply here
+	double thre_lower = 0.1;
+	// top 
+	int pos_top = 0;
+	int black_pixels = 0;
+	for (int i = 0; i < chip.size().height; i++) {
+		black_pixels = 0;
+		for (int j = 0; j < chip.size().width; j++) {
+			if ((int)chip.at<uchar>(i, j) == 255) {
+				black_pixels++;
+			}
+		}
+		double ratio = black_pixels * 1.0 / chip.size().width;
+		if (ratio < thre_upper && ratio > thre_lower) {
+			pos_top = i;
+			break;
+		}
+	}
+
+	// bottom 
+	black_pixels = 0;
+	int pos_bot = 0;
+	for (int i = chip.size().height - 1; i >= 0; i--) {
+		black_pixels = 0;
+		for (int j = 0; j < chip.size().width; j++) {
+			//noise
+			if ((int)chip.at<uchar>(i, j) == 255) {
+				black_pixels++;
+			}
+		}
+		double ratio = black_pixels * 1.0 / chip.size().width;
+		if (ratio < thre_upper && ratio > thre_lower) {
+			pos_bot = i;
+			break;
+		}
+	}
+
+	// left
+	black_pixels = 0;
+	int pos_left = 0;
+	for (int i = 0; i < chip.size().width; i++) {
+		black_pixels = 0;
+		for (int j = 0; j < chip.size().height; j++) {
+			//noise
+			if ((int)chip.at<uchar>(j, i) == 255) {
+				black_pixels++;
+			}
+		}
+		double ratio = black_pixels * 1.0 / chip.size().height;
+		if (ratio < thre_upper && ratio > thre_lower) {
+			pos_left = i;
+			break;
+		}
+	}
+	// right
+	black_pixels = 0;
+	int pos_right = 0;
+	for (int i = chip.size().width - 1; i >= 0; i--) {
+		black_pixels = 0;
+		for (int j = 0; j < chip.size().height; j++) {
+			//noise
+			if ((int)chip.at<uchar>(j, i) == 255) {
+				black_pixels++;
+			}
+		}
+		double ratio = black_pixels * 1.0 / chip.size().height;
+		if (ratio < thre_upper && ratio > thre_lower) {
+			pos_right = i;
+			break;
+		}
+	}
+	boundaries[0] = pos_top;
+	boundaries[1] = pos_bot;
+	boundaries[2] = pos_left;
+	boundaries[3] = pos_right;
+	return boundaries;
 }

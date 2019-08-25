@@ -15,7 +15,7 @@ def rectangle_generator():
 	D = []
 	FD = []
 	max_aspect = 5
-	lengths = np.arange(20, 105, 2)
+	lengths = np.arange(10, 80, 2)
 	for width in lengths:
 		for height in lengths:
 			for choice in range(2):
@@ -179,8 +179,8 @@ def main(input_filename, output_filename, num_iterations):
 
 	# resize to 128 x 128
 	Y = misc.imresize(Y, (128, 128)) / 255
-	Y[Y < 0.4] = 0
-	Y[Y >= 0.4] = 1.0
+	Y[Y < 0.5] = 0
+	Y[Y >= 0.5] = 1.0
 	misc.imsave('data/resize_0112.png', (Y * 255).astype(np.uint8))
 	#norm_Y = np.sqrt(np.inner(Y.flat, Y.flat))
 	norm_Y = np.sum(Y)
@@ -203,7 +203,7 @@ def main(input_filename, output_filename, num_iterations):
 	A = None
 	coeff = None
 	for iter in range(num_iterations):
-		residual[residual <= 0] = -1
+		residual[residual <= 0] = 0
 		
 		# calculate coefficient
 		FY = np.fft.fftn(residual)
@@ -225,7 +225,8 @@ def main(input_filename, output_filename, num_iterations):
 		if iter == 0:
 			A = column
 		else:
-			A = np.hstack([A, column])
+			A = column
+			# A = np.hstack([A, column])
 		
 		# calculate coefficient by solving Ax=Y
 		coeff = np.linalg.solve(A.T.dot(A), A.T.dot(Y.flat))
@@ -244,8 +245,8 @@ def main(input_filename, output_filename, num_iterations):
 		
 		# update residual
 		#residual = Y - Y2
-		#residual[residual < 0] = 0
-		misc.imsave('results/residual_' + str(iter) + '.png', (residual * 255).astype(np.uint8))
+		residual[residual < 0] = 0
+		#misc.imsave('results/residual_' + str(iter) + '.png', (residual * 255).astype(np.uint8))
 		
 		# check stoppping criteria
 		#err = np.sqrt(np.inner(residual.flat, residual.flat))

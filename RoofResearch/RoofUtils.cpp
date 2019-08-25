@@ -315,11 +315,11 @@ namespace roof_utils {
 		// normal
 		for (int i = 0; i < sub_folders.size(); i++){
 			std::string sub_folder = sub_folders[i];
-			std::string bld_mask_tif = path + "/" + sub_folder + "/building_cluster_" + sub_folder + "__NDSM.tif";
-			std::string bld_mask_img = path + "/" + sub_folder + "/building_cluster_" + sub_folder + "__NDSM.png";
+			std::string bld_mask_tif = path + "/" + sub_folder + "/building_cluster_" + sub_folder + "__NDSM_oriented.tif";
+			std::string bld_mask_img = path + "/" + sub_folder + "/building_cluster_" + sub_folder + "__NDSM_oriented.png";
 			//std::cout << "bld_mask is " << bld_mask << std::endl;
 			std::vector<std::vector<int>> type_info;
-			translate_bld_ndsm(bld_mask_tif.c_str(), bld_mask_img, 0.3);
+			translate_bld_ndsm(bld_mask_tif.c_str(), bld_mask_img, 0.5);
 			/*type_info = read_tiff_int(bld_mask_tif.c_str());
 			std::string bld_pan_tif = path + "/" + sub_folder + "/building_cluster_" + sub_folder + "__OrthoPAN.tif";
 			std::string bld_pan_img = path + "/" + sub_folder + "/building_cluster_" + sub_folder + "__OrthoPAN.png";
@@ -373,13 +373,13 @@ namespace roof_utils {
 			//std::cout << "bld_mask is " << bld_mask << std::endl;
 			std::vector<std::vector<int>> type_info;
 			translate_bld_mask(bld_mask_tif.c_str(), bld_mask_img);
-			type_info = read_tiff_int(bld_mask_tif.c_str());
+			/*type_info = read_tiff_int(bld_mask_tif.c_str());
 			std::string bld_pan_tif = path + "/" + sub_folder + "/building_cluster_" + sub_folder + "__OrthoPAN_oriented.tif";
 			std::string bld_pan_img = path + "/" + sub_folder + "/building_cluster_" + sub_folder + "__OrthoPAN_oriented.png";
 			std::string bld_rgb_tif = path + "/" + sub_folder + "/building_cluster_" + sub_folder + "__OrthoRGB_oriented.tif";
 			std::string bld_rgb_img = path + "/" + sub_folder + "/building_cluster_" + sub_folder + "__OrthoRGB_oriented.png";
 			crop_img_from_mask(bld_pan_tif.c_str(), type_info, bld_pan_img);
-			crop_img_from_mask(bld_rgb_tif.c_str(), type_info, bld_rgb_img);
+			crop_img_from_mask(bld_rgb_tif.c_str(), type_info, bld_rgb_img);*/
 		}
 	}
 
@@ -831,7 +831,7 @@ namespace roof_utils {
 			cv::Mat output_img(cv::Size(nXSize, nYSize), CV_8UC1, bg_color);
 			for (int i = 0; i < nYSize; i++){
 				for (int j = 0; j < nXSize; j++){
-					if (pafScanline[j + nXSize*i] > threshold * adfMinMax[1])
+					if (pafScanline[j + nXSize*i] > threshold)
 						output_img.at<uchar>(i, j) = (uchar)255;
 				}
 			}
