@@ -22,13 +22,38 @@ int main(int argc, char** argv)
 	//cv::imwrite("../data/rotate.png", dst);
 	std::vector<int> boundaries = adjust_chip(src);
 	cv::Mat adjust_img = src(cv::Rect(boundaries[2], boundaries[0], boundaries[3] - boundaries[2] + 1, boundaries[1] - boundaries[0] + 1));
-	// resize to 200 by 200
-	cv::resize(adjust_img, adjust_img, cv::Size(200, 200));
+	// resize to 10 by 10
+	int target_small_width = 10;
+	int target_small_height = 10;
+	int target_big_width = 200;
+	int target_big_height = 200;
+	int step = 20;
+	cv::Mat small_img;
+	cv::resize(adjust_img, small_img, cv::Size(target_small_width, target_small_height));
+	// correct color
+	for (int i = 0; i < small_img.size().height; i++) {
+		for (int j = 0; j < small_img.size().width; j++) {
+			//noise
+			if ((int)small_img.at<uchar>(i, j) < 200) {
+				small_img.at<uchar>(i, j) = (uchar)0;
+			}
+			else
+				small_img.at<uchar>(i, j) = (uchar)255;
+		}
+	}
+	cv::imwrite("../data/small.png", small_img);
+	cv::Mat big_img(target_big_width, target_big_height, CV_8UC1);;
+	for (int i = 0; i < big_img.size().height; i++) {
+		for (int j = 0; j < big_img.size().width; j++) {
+			big_img.at<uchar>(i, j) = small_img.at<uchar>(i / step, j / step);
+		}
+	}
+	cv::imwrite("../data/big.png", big_img);
 	// add padding
 	int padding_size = 12;
 	int borderType = cv::BORDER_CONSTANT;
 	cv::Mat img_padding;
-	cv::copyMakeBorder(adjust_img, img_padding, padding_size, padding_size, padding_size, padding_size, borderType, cv::Scalar(0, 0, 0));
+	cv::copyMakeBorder(big_img, img_padding, padding_size, padding_size, padding_size, padding_size, borderType, cv::Scalar(0, 0, 0));
 	cv::imwrite("../data/resize.png", img_padding);
 	system("pause");
 	return 0;
