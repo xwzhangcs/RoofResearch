@@ -23,11 +23,11 @@ int main(int argc, char** argv)
 	std::vector<int> boundaries = adjust_chip(src);
 	cv::Mat adjust_img = src(cv::Rect(boundaries[2], boundaries[0], boundaries[3] - boundaries[2] + 1, boundaries[1] - boundaries[0] + 1));
 	// resize to 10 by 10
-	int target_small_width = 10;
-	int target_small_height = 10;
+	int target_small_width = 8;
+	int target_small_height = 8;
 	int target_big_width = 200;
 	int target_big_height = 200;
-	int step = 20;
+	int step = 25;
 	cv::Mat small_img;
 	cv::resize(adjust_img, small_img, cv::Size(target_small_width, target_small_height));
 	// correct color
